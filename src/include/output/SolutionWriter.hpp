@@ -9,7 +9,7 @@
 
 class SolutionWriter {
     public : 
-        static void save (
+        static bool save (
             const std::string& filePath,
             const Board& board,
             const SolverResult& result,

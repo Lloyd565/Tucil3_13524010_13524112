@@ -14,8 +14,8 @@ Board::Board()
 Board::Board(
     int rows,
     int cols,
-    vector<vector<char>> grid,
-    vector<vector<int>> costs,
+    const vector<vector<char>>& grid,
+    const vector<vector<int>>& costs,
     Position startPosition,
     Position goalPosition,
     int maxNumber

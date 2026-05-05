@@ -2,7 +2,6 @@
 #include "parser/Validator.hpp"
 
 #include <fstream>
-#include <sstream>
 #include <stdexcept>
 #include <vector>
 
@@ -16,6 +15,7 @@ Board InputParser::parseFile(const std::string& path) {
     int cols;
 
     if (!(file >> rows >> cols)) throw runtime_error("Invalid input format : missing board dimensions");
+    if (!Validator::validateDimension(rows, cols)) throw runtime_error("Invalid input format : invalid board dimensions");
 
     vector<string> gridLines;
 

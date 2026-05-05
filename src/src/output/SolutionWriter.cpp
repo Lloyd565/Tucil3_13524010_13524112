@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void SolutionWriter::save(
+bool SolutionWriter::save(
     const string& filePath,
     const Board& board,
     const SolverResult& result,
@@ -17,7 +17,7 @@ void SolutionWriter::save(
 
     if (!out.is_open()) {
         cerr << "Gagal membuka file output.\n";
-        return;
+        return false;
     }
 
     out << "Algorithm: " << algorithmName << '\n';
@@ -33,8 +33,7 @@ void SolutionWriter::save(
             << result.getIterations()
             << " iterasi\n";
 
-        out.close();
-        return;
+        return true;
     }
 
     out << "Solusi Yang Ditemukan : "
@@ -59,7 +58,7 @@ void SolutionWriter::save(
         << result.getIterations()
         << " iterasi\n";
 
-    out.close();
+    return true;
 }
 
 void SolutionWriter::writeBoard(

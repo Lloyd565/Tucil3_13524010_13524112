@@ -21,8 +21,8 @@ class Board {
         Board(
             int rows, 
             int cols, 
-            std::vector<std::vector<char>> grid,
-            std::vector<std::vector<int>> costs,
+            const std::vector<std::vector<char>>& grid,
+            const std::vector<std::vector<int>>& costs,
             Position startPosition,
             Position goalPosition, 
             int maxNumber

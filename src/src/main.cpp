@@ -148,7 +148,7 @@ int main() {
             cout << "Masukan file output : \n";
             cin >> outputPath;
 
-            SolutionWriter::save(
+            bool isSaved = SolutionWriter::save(
                 outputPath,
                 board,
                 result,
@@ -156,7 +156,7 @@ int main() {
                 heuristicName
             );
 
-            cout << "Solusi disimpan pada " << outputPath << '\n';
+            if (isSaved) cout << "Solusi disimpan pada " << outputPath << '\n';
         }
     }
     catch (const exception& error) {
