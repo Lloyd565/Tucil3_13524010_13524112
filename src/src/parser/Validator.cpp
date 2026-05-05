@@ -52,7 +52,7 @@ bool Validator::validatePlayerAndGoal(const vector<string>& gridLines) {
 }
 
 bool Validator::validateNumbers(const vector<string>& gridLines) {
-    bool count[10] = {false};
+    int count[10] = {0};
     for (const string& line : gridLines) {
         for (char c : line) {
             if (c >= '0' && c <= '9') count[c - '0']++;
