@@ -1,0 +1,32 @@
+# Build output
+bin/
+build/
+out/
+
+# Compiled objects and binaries
+*.o
+*.obj
+*.d
+*.exe
+*.out
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+Makefile
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
