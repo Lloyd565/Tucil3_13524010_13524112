@@ -43,11 +43,14 @@ Board InputParser::parseFile(const std::string& path) {
     Position goalPosition;
 
     for (int i = 0 ; i < rows ; i++) {
-        for (int j = 0 ; i < cols ; j++) {
+        for (int j = 0 ; j < cols ; j++) {
             char tile = gridLines[i][j];
             grid[i][j] = tile;
 
-            if (tile == 'Z') startPosition = Position(i, j);
+            if (tile == 'Z') {
+                startPosition = Position(i, j);
+                grid[i][j] = '*';
+            }
             else if (tile == 'O') goalPosition = Position(i, j);
         }
     }

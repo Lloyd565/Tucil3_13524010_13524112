@@ -1,6 +1,8 @@
 #pragma once 
 
 #include <string>
+#include <vector>
+
 #include "model/Board.hpp"
 
 class InputParser {

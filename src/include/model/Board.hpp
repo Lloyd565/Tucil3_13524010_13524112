@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 
 #include <vector>
 #include "model/Position.hpp"
@@ -32,6 +32,9 @@ class Board {
 
         char getTile(const Position& position) const;
         int getCost(const Position& position) const;
+
+        const Position& getStartPosition() const;
+        const Position& getGoalPosition() const;
 
         int getMaxNumber() const;
 

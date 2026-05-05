@@ -43,6 +43,14 @@ int Board::getCost(const Position& position) const {
     return costs[position.getRow()][position.getCol()];
 }
 
+const Position& Board::getStartPosition() const {
+    return startPosition;
+}
+
+const Position& Board::getGoalPosition() const {
+    return goalPosition;
+}
+
 int Board::getMaxNumber() const {
     return maxNumber;
 }
