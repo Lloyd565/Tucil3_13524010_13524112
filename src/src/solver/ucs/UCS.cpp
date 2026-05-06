@@ -104,12 +104,19 @@ SolverResult UCS::solve(const SolverInput& solverInput) {
                 bestCost[key] = newCost;
                 queue.push(nextState, nextState.getTotalCost());
             }
-
-            
         }
     }
 
-    return SolverResult();
+    auto endTime = chrono::high_resolution_clock::now();
+    long long execTime = chrono::duration_cast<chrono::milliseconds>(
+        endTime - startTime
+    ).count();
+
+    return SolverResult::notFound(
+        iterationCount, 
+        execTime, 
+        exploredState
+    );
 }
 
 
