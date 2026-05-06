@@ -126,7 +126,7 @@ int main() {
             heuristicName = promptHeuristic();
         }
 
-        State initialState(board.getStartPosition(), 1, 0, "");
+        State initialState(board.getStartPosition(), 0, 0, "");
         SolverInput solverInput(board, initialState);
         SolverResult result;
 
