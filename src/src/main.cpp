@@ -126,7 +126,7 @@ int main() {
             heuristicName = promptHeuristic();
         }
 
-        State initialState(board.getStartPosition(), 1, 0, "");
+        State initialState(board.getStartPosition(), 0, 0, "");
         SolverInput solverInput(board, initialState);
         SolverResult result;
 
@@ -134,7 +134,7 @@ int main() {
 
         if (algorithmName == "UCS") result = UCS::solve(solverInput);
         else if (algorithmName == "GBFS") result = GBFS::solve(solverInput);
-        else result = AStar::solve(solverInput);
+        else result = AStar::solve(solverInput, heuristicName);
 
         Printer::printSolution(board, result);
 
