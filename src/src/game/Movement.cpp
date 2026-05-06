@@ -25,7 +25,7 @@ std::optional<State> Movement::slide(
         char tile = board.getTile(next);
 
         if (Rules::isLava(tile)) return std::nullopt;
-        if (Rules::isWall(tile)) return std::nullopt;
+        if (Rules::isWall(tile)) break;
 
         State temp(current, nextRequiredNumber, state.getTotalCost() + totalCost, state.getMoves());
 
