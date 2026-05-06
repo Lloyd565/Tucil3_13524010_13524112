@@ -133,7 +133,7 @@ int main() {
         cout << "Algoritma " << algorithmName << " digunakan.\n";
 
         if (algorithmName == "UCS") result = UCS::solve(solverInput);
-        else if (algorithmName == "GBFS") result = GBFS::solve(solverInput);
+        else if (algorithmName == "GBFS") result = GBFS::solve(solverInput, heuristicName);
         else result = AStar::solve(solverInput, heuristicName);
 
         Printer::printSolution(board, result);

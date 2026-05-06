@@ -2,12 +2,13 @@
 #include "game/Movement.hpp"
 #include "game/Rules.hpp"
 #include "heuristic/astar/AStarHeuristic.hpp"
+#include "model/PriorityQueue.hpp"
+#include "solver/Comparators.hpp"
 
-#include <chrono>
-#include <map>
-#include <queue>
-#include <tuple>
 #include <vector>
+#include <tuple>
+#include <map>
+#include <chrono>
 
 using namespace std;
 using StateKey = tuple<int, int, int>;
@@ -55,23 +56,18 @@ SolverResult AStar::solve(const SolverInput& solverInput, const string& heuristi
 
     auto startTime = chrono::high_resolution_clock::now();
 
-    using PQElement = pair<int, State>;
-    auto cmp = [](const PQElement& a, const PQElement& b) {
-        return a.first > b.first;
-    };
-    priority_queue<PQElement, vector<PQElement>, decltype(cmp)> pq(cmp);
+    PriorityQueue<CompareAStar> pq;
 
     map<StateKey, int> bestG;
     vector<State> exploredStates;
     int iterations = 0;
 
     int initH = AStarHeuristic::compute(board, initial, heuristic);
-    pq.push({initH, initial});
+    pq.push(initial, initH);
     bestG[makeKey(initial)] = 0;
 
     while (!pq.empty()) {
-        auto [f, state] = pq.top();
-        pq.pop();
+        State state = pq.pop();
 
         StateKey key = makeKey(state);
         int g = state.getTotalCost();
@@ -104,7 +100,7 @@ SolverResult AStar::solve(const SolverInput& solverInput, const string& heuristi
             if (!bestG.count(nextKey) || nextG < bestG[nextKey]) {
                 bestG[nextKey] = nextG;
                 int nextH = AStarHeuristic::compute(board, next, heuristic);
-                pq.push({nextG + nextH, next});
+                pq.push(next, nextG + nextH);
             }
         }
     }
