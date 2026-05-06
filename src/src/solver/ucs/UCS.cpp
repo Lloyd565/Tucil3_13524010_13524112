@@ -1,10 +1,11 @@
 #include "solver/ucs/UCS.hpp"
 
-#include <unordered_map>
-#include <string>
-#include <limits>
 #include <chrono>
 #include <optional>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "model/PriorityQueue.hpp"
 #include "solver/Comparators.hpp"
@@ -20,6 +21,21 @@ string getStateKey(const State& state) {
             to_string(state.getNextRequiredNumber());
 }
 
+Direction getDirectionFromMove(char move) {
+    switch (move) {
+        case 'U':
+            return Direction::Up;
+        case 'D':
+            return Direction::Down;
+        case 'L':
+            return Direction::Left;
+        case 'R':
+            return Direction::Right;
+        default:
+            throw runtime_error("Error : invalid solution move");
+    }
+}
+
 vector<State> buildSolutionSteps(
     const Board& board, 
     const State& startState, 
@@ -31,15 +47,13 @@ vector<State> buildSolutionSteps(
     tempSteps.push_back(currentState);
 
     for (char move : moves) {
-        optional<State> nextState;
+        optional<State> nextState = Movement::slide(
+            board,
+            currentState,
+            getDirectionFromMove(move)
+        );
 
-        
-        if (move == 'U') nextState = Movement::slide(board, currentState, Direction::Up);
-        else if (move == 'L') nextState = Movement::slide(board, currentState, Direction::Left);
-        else if (move == 'R') nextState = Movement::slide(board, currentState, Direction::Right);
-        else nextState = Movement::slide(board, currentState, Direction::Down);
-
-        if (!nextState.has_value()) break;
+        if (!nextState.has_value()) throw runtime_error("Error : invalid solution path");
 
         currentState = nextState.value();
         tempSteps.push_back(currentState);
@@ -50,26 +64,32 @@ vector<State> buildSolutionSteps(
 }
 
 SolverResult UCS::solve(const SolverInput& solverInput) {
-    Board board = solverInput.getBoard();
+    const Board& board = solverInput.getBoard();
 
     auto startTime = chrono::high_resolution_clock::now();
     PriorityQueue<CompareUCS> queue;
 
-    State startState = solverInput.getInitialState();
+    const State& startState = solverInput.getInitialState();
 
     queue.push(startState, startState.getTotalCost());
 
     unordered_map<string, int> bestCost;
-    bestCost[getStateKey(startState)] = 0;
+    bestCost[getStateKey(startState)] = startState.getTotalCost();
 
     int iterationCount = 0;
 
-    vector<State> exploredState;
+    vector<State> exploredStates;
 
     while (!queue.empty()) {
         State currentState = queue.pop();
+        string currentKey = getStateKey(currentState);
+
+        if (currentState.getTotalCost() > bestCost[currentKey]) {
+            continue;
+        }
+
         iterationCount++;
-        exploredState.push_back(currentState);
+        exploredStates.push_back(currentState);
 
         if (Rules::isGoalState(board, currentState)) {
             auto endTime = chrono::high_resolution_clock::now();
@@ -87,7 +107,7 @@ SolverResult UCS::solve(const SolverInput& solverInput) {
                 iterationCount,
                 execTime, 
                 solutionSteps, 
-                exploredState
+                exploredStates
             );
         }
 
@@ -97,12 +117,9 @@ SolverResult UCS::solve(const SolverInput& solverInput) {
             string key = getStateKey(nextState);
             int newCost = nextState.getTotalCost();
 
-            if (
-                bestCost.find(key) == bestCost.end() ||
-                newCost < bestCost[key]
-            ) {
+            if (bestCost.find(key) == bestCost.end() || newCost < bestCost[key]) {
                 bestCost[key] = newCost;
-                queue.push(nextState, nextState.getTotalCost());
+                queue.push(nextState, newCost);
             }
         }
     }
@@ -115,8 +132,6 @@ SolverResult UCS::solve(const SolverInput& solverInput) {
     return SolverResult::notFound(
         iterationCount, 
         execTime, 
-        exploredState
+        exploredStates
     );
 }
-
-
