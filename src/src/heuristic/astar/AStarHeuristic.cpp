@@ -18,12 +18,12 @@ static Position findCheckpoint(const Board& board, int number) {
     return board.getGoalPosition();
 }
 
-// H1: Manhattan distance langsung ke goal (abaikan checkpoint)
+// H1: Manhattan ke tujuan
 int AStarHeuristic::h1(const Board& board, const State& state) {
     return manhattanDistance(state.getPlayerPosition(), board.getGoalPosition());
 }
 
-// H2: Manhattan ke checkpoint berikutnya + Manhattan dari checkpoint ke goal
+// H2: Manhattan ke nextile
 int AStarHeuristic::h2(const Board& board, const State& state) {
     int next = state.getNextRequiredNumber();
     if (next > board.getMaxNumber()) {
@@ -34,7 +34,7 @@ int AStarHeuristic::h2(const Board& board, const State& state) {
          + manhattanDistance(checkpoint, board.getGoalPosition());
 }
 
-// H3: Euclidean distance ke goal
+// H3: Euclidean ke tujuan
 int AStarHeuristic::h3(const Board& board, const State& state) {
     int dr = state.getPlayerPosition().getRow() - board.getGoalPosition().getRow();
     int dc = state.getPlayerPosition().getCol() - board.getGoalPosition().getCol();

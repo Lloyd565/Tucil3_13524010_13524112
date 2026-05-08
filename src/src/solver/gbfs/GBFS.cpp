@@ -26,7 +26,7 @@ static Direction charToDirection(char c) {
         case 'U': return Direction::Up;
         case 'D': return Direction::Down;
         case 'L': return Direction::Left;
-        default:  return Direction::Right;
+        case 'R': return Direction::Right;
     }
 }
 
