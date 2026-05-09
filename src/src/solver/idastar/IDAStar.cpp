@@ -1,6 +1,7 @@
 #include "solver/idastar/IDAStar.hpp"
 
 #include <chrono>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -19,7 +20,7 @@ enum Result {
     NOTFOUND
 };
 
-Direction getDirectionFromMove(char move) {
+static Direction getDirectionFromMove(char move) {
     switch (move) {
         case 'U':
             return Direction::Up;
@@ -34,7 +35,7 @@ Direction getDirectionFromMove(char move) {
     }
 }
 
-vector<State> buildSolutionSteps(
+static vector<State> buildSolutionSteps(
     const Board& board, 
     const State& startState, 
     const string& moves
@@ -96,7 +97,7 @@ Result dfs(
 }
 
 
-static SolverResult solve(const SolverInput& solverInput) {
+SolverResult IDAStar::solve(const SolverInput& solverInput) {
     const Board& board = solverInput.getBoard();
     const State& initialState = solverInput.getInitialState();
 
@@ -112,21 +113,35 @@ static SolverResult solve(const SolverInput& solverInput) {
         int cacheThreshold = threshold;
         Result result = dfs(board, initialState, &threshold, &iterationCount, &exploredStates, &finalState);
         
-        if (result == Result::FOUND) return SolverResult(
+        if (result == Result::FOUND) {
+            auto endTime = chrono::high_resolution_clock::now();
+            long long execTime = chrono::duration_cast<chrono::milliseconds>(
+                endTime - startTime
+            ).count();
+
+            return SolverResult(
             true, 
             finalState.getMoves(),
             finalState.getTotalCost(),
             iterationCount,
-            startTime - chrono::high_resolution_clock::now(),
+            execTime,
             buildSolutionSteps(board, finalState, finalState.getMoves()),
             exploredStates
-        );
+            );
+        }
 
-        if (cacheThreshold == numeric_limits<int>::infinity()) return SolverResult::notFound(
+        if (cacheThreshold == numeric_limits<int>::infinity()) {
+            auto endTime = chrono::high_resolution_clock::now();
+            long long execTime = chrono::duration_cast<chrono::milliseconds>(
+                endTime - startTime
+            ).count();
+
+            return SolverResult::notFound(
             iterationCount, 
-            startTime - chrono::high_resolution_clock::now(),
+            execTime,
             exploredStates
-        )
+            );
+        }
     }
 
 }
