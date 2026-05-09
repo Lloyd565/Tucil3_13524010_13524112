@@ -17,14 +17,16 @@ class Movement {
     public : 
         static std::optional<State> slide(
             const Board& board,
-            const State& state, 
+            const State& state,
             Direction direction
         );
 
         static std::vector<State> getPossibleMoves(
-            const Board& board, 
+            const Board& board,
             const State& state
         );
+
+        static Direction charToDirection(char c);
 
     private : 
         static int getDeltaRow(Direction direction);

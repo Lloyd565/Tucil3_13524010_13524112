@@ -21,15 +21,6 @@ static StateKey makeKey(const State& state) {
     };
 }
 
-static Direction charToDirection(char c) {
-    switch (c) {
-        case 'U': return Direction::Up;
-        case 'D': return Direction::Down;
-        case 'L': return Direction::Left;
-        case 'R': return Direction::Right;
-    }
-}
-
 static vector<State> reconstructPath(
     const Board& board,
     const State& initial,
@@ -40,7 +31,7 @@ static vector<State> reconstructPath(
 
     State current = initial;
     for (char c : goal.getMoves()) {
-        auto next = Movement::slide(board, current, charToDirection(c));
+        auto next = Movement::slide(board, current, Movement::charToDirection(c));
         if (next.has_value()) {
             steps.push_back(next.value());
             current = next.value();

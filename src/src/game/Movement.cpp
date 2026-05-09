@@ -99,6 +99,15 @@ int Movement::getDeltaCol(Direction direction) {
     return 0;
 }
 
+Direction Movement::charToDirection(char c) {
+    switch (c) {
+        case 'U': return Direction::Up;
+        case 'D': return Direction::Down;
+        case 'L': return Direction::Left;
+        default:  return Direction::Right;
+    }
+}
+
 char Movement::getMoveChar(Direction direction) {
     switch (direction) {
         case Direction::Up:
