@@ -3,8 +3,10 @@
 #include <chrono>
 #include <limits>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "game/Movement.hpp"
@@ -13,7 +15,20 @@
 
 using namespace std;
 
-static const int SEARCH_FOUND = -1;
+using StateKey = tuple<int, int, int>;
+
+struct SearchResult {
+    bool found;
+    int nextThreshold;
+};
+
+static StateKey makeKey(const State& state) {
+    return {
+        state.getPlayerPosition().getRow(),
+        state.getPlayerPosition().getCol(),
+        state.getNextRequiredNumber()
+    };
+}
 
 static Direction getDirectionFromMove(char move) {
     switch (move) {
@@ -57,64 +72,53 @@ static vector<State> buildSolutionSteps(
     return tempSteps;
 }
 
-static bool isOnPath(
-    const vector<State>& path,
-    const State& state
-) {
-    for (const State& pathState : path) {
-        if (pathState == state) return true;
-    }
-    return false;
-}
-
-static int dfs(
+static SearchResult dfs(
     const Board& board, 
     const State& currentState, 
     const string& heuristic,
     int threshold, 
     int& iterationCount,
     vector<State>& exploredStates,
-    vector<State>& path,
+    set<StateKey>& pathStates,
     State& finalResult
 ) {
     int f = currentState.getTotalCost() + AStarHeuristic::compute(board, currentState, heuristic);
 
-    if (f > threshold) return f;
+    if (f > threshold) return {false, f};
 
     iterationCount++;
     exploredStates.push_back(currentState);
 
     if (Rules::isGoalState(board, currentState)) {
         finalResult = currentState;
-        return SEARCH_FOUND;
+        return {true, threshold};
     }
 
     int minNextThreshold = numeric_limits<int>::max();
 
     vector<State> possibleMoves = Movement::getPossibleMoves(board, currentState);
     for (const State& nextState : possibleMoves) {
-        if (isOnPath(path, nextState)) {
-            continue;
-        }
+        StateKey nextKey = makeKey(nextState);
+        if (pathStates.count(nextKey)) continue;
 
-        path.push_back(nextState);
-        int result = dfs(
+        pathStates.insert(nextKey);
+        SearchResult result = dfs(
             board,
             nextState,
             heuristic,
             threshold,
             iterationCount,
             exploredStates,
-            path,
+            pathStates,
             finalResult
         );
-        path.pop_back();
+        pathStates.erase(nextKey);
 
-        if (result == SEARCH_FOUND) return SEARCH_FOUND;
-        if (result < minNextThreshold) minNextThreshold = result;
+        if (result.found) return result;
+        if (result.nextThreshold < minNextThreshold) minNextThreshold = result.nextThreshold;
     }
 
-    return minNextThreshold;
+    return {false, minNextThreshold};
 }
 
 SolverResult IDAStar::solve(const SolverInput& solverInput, const string& heuristic) {
@@ -130,21 +134,21 @@ SolverResult IDAStar::solve(const SolverInput& solverInput, const string& heuris
 
     while (true) {
         State finalState;
-        vector<State> path;
-        path.push_back(initialState);
+        set<StateKey> pathStates;
+        pathStates.insert(makeKey(initialState));
 
-        int result = dfs(
+        SearchResult result = dfs(
             board,
             initialState,
             heuristic,
             threshold,
             iterationCount,
             exploredStates,
-            path,
+            pathStates,
             finalState
         );
         
-        if (result == SEARCH_FOUND) {
+        if (result.found) {
             auto endTime = chrono::high_resolution_clock::now();
             long long execTime = chrono::duration_cast<chrono::milliseconds>(
                 endTime - startTime
@@ -161,7 +165,7 @@ SolverResult IDAStar::solve(const SolverInput& solverInput, const string& heuris
             );
         }
 
-        if (result == numeric_limits<int>::max()) {
+        if (result.nextThreshold == numeric_limits<int>::max()) {
             auto endTime = chrono::high_resolution_clock::now();
             long long execTime = chrono::duration_cast<chrono::milliseconds>(
                 endTime - startTime
@@ -174,7 +178,7 @@ SolverResult IDAStar::solve(const SolverInput& solverInput, const string& heuris
             );
         }
 
-        threshold = result;
+        threshold = result.nextThreshold;
     }
 
 }
