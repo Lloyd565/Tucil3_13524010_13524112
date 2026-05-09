@@ -5,20 +5,15 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
-#include "solver/Comparators.hpp"
 #include "game/Movement.hpp"
 #include "game/Rules.hpp"
 #include "heuristic/astar/AStarHeuristic.hpp"
 
 using namespace std;
 
-enum Result {
-    FOUND, 
-    NOTFOUND
-};
+static const int SEARCH_FOUND = -1;
 
 static Direction getDirectionFromMove(char move) {
     switch (move) {
@@ -62,46 +57,71 @@ static vector<State> buildSolutionSteps(
     return tempSteps;
 }
 
-Result dfs(
-    const Board& board, 
-    const State& currentState, 
-    int* threshold, 
-    int* iterationCount,
-    vector<State>* exploredStates,
-    State* finalResult
+static bool isOnPath(
+    const vector<State>& path,
+    const State& state
 ) {
-    int f = currentState.getTotalCost() + AStarHeuristic::compute(board, currentState, "H1");
-
-    if (f > *threshold) return Result::NOTFOUND;
-
-    if (Rules::isGoalState(board, currentState)) return Result::FOUND;
-
-    int minNextThreshold = numeric_limits<int>::infinity();
-
-    vector<State> possibleMoves = Movement::getPossibleMoves(board, currentState);
-
-    for (State move : possibleMoves) {
-        exploredStates->push_back(move);
-        if (Rules::isGoalState(board, move)) {
-            finalResult = &move;
-            return Result::FOUND;
-        }
-        Result result = dfs(board, currentState, threshold, iterationCount, exploredStates, finalResult);
-        if (result = Result::FOUND) return Result::FOUND;
-
-        minNextThreshold = min(minNextThreshold, *threshold);
+    for (const State& pathState : path) {
+        if (pathState == state) return true;
     }
-
-    return Result::NOTFOUND;
-
+    return false;
 }
 
+static int dfs(
+    const Board& board, 
+    const State& currentState, 
+    const string& heuristic,
+    int threshold, 
+    int& iterationCount,
+    vector<State>& exploredStates,
+    vector<State>& path,
+    State& finalResult
+) {
+    int f = currentState.getTotalCost() + AStarHeuristic::compute(board, currentState, heuristic);
 
-SolverResult IDAStar::solve(const SolverInput& solverInput) {
+    if (f > threshold) return f;
+
+    iterationCount++;
+    exploredStates.push_back(currentState);
+
+    if (Rules::isGoalState(board, currentState)) {
+        finalResult = currentState;
+        return SEARCH_FOUND;
+    }
+
+    int minNextThreshold = numeric_limits<int>::max();
+
+    vector<State> possibleMoves = Movement::getPossibleMoves(board, currentState);
+    for (const State& nextState : possibleMoves) {
+        if (isOnPath(path, nextState)) {
+            continue;
+        }
+
+        path.push_back(nextState);
+        int result = dfs(
+            board,
+            nextState,
+            heuristic,
+            threshold,
+            iterationCount,
+            exploredStates,
+            path,
+            finalResult
+        );
+        path.pop_back();
+
+        if (result == SEARCH_FOUND) return SEARCH_FOUND;
+        if (result < minNextThreshold) minNextThreshold = result;
+    }
+
+    return minNextThreshold;
+}
+
+SolverResult IDAStar::solve(const SolverInput& solverInput, const string& heuristic) {
     const Board& board = solverInput.getBoard();
     const State& initialState = solverInput.getInitialState();
 
-    int threshold = 10;
+    int threshold = AStarHeuristic::compute(board, initialState, heuristic);
 
     auto startTime = chrono::high_resolution_clock::now();
 
@@ -110,38 +130,51 @@ SolverResult IDAStar::solve(const SolverInput& solverInput) {
 
     while (true) {
         State finalState;
-        int cacheThreshold = threshold;
-        Result result = dfs(board, initialState, &threshold, &iterationCount, &exploredStates, &finalState);
+        vector<State> path;
+        path.push_back(initialState);
+
+        int result = dfs(
+            board,
+            initialState,
+            heuristic,
+            threshold,
+            iterationCount,
+            exploredStates,
+            path,
+            finalState
+        );
         
-        if (result == Result::FOUND) {
+        if (result == SEARCH_FOUND) {
             auto endTime = chrono::high_resolution_clock::now();
             long long execTime = chrono::duration_cast<chrono::milliseconds>(
                 endTime - startTime
             ).count();
 
             return SolverResult(
-            true, 
-            finalState.getMoves(),
-            finalState.getTotalCost(),
-            iterationCount,
-            execTime,
-            buildSolutionSteps(board, finalState, finalState.getMoves()),
-            exploredStates
+                true, 
+                finalState.getMoves(),
+                finalState.getTotalCost(),
+                iterationCount,
+                execTime,
+                buildSolutionSteps(board, initialState, finalState.getMoves()),
+                exploredStates
             );
         }
 
-        if (cacheThreshold == numeric_limits<int>::infinity()) {
+        if (result == numeric_limits<int>::max()) {
             auto endTime = chrono::high_resolution_clock::now();
             long long execTime = chrono::duration_cast<chrono::milliseconds>(
                 endTime - startTime
             ).count();
 
             return SolverResult::notFound(
-            iterationCount, 
-            execTime,
-            exploredStates
+                iterationCount, 
+                execTime,
+                exploredStates
             );
         }
+
+        threshold = result;
     }
 
 }

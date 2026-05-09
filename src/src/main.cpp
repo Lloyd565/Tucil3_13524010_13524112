@@ -2,6 +2,7 @@
 #include "solver/SolverInput.hpp"
 #include "solver/astar/AStar.hpp"
 #include "solver/gbfs/GBFS.hpp"
+#include "solver/idastar/IDAStar.hpp"
 #include "solver/ucs/UCS.hpp"
 #include "output/Printer.hpp"
 #include "output/Playback.hpp"
@@ -35,6 +36,7 @@ static string normalizeAlgorithm(const string& algorithm) {
     if (lowerAlgorithm == "ucs") return "UCS";
     if (lowerAlgorithm == "gbfs") return "GBFS";
     if (lowerAlgorithm == "a*") return "A*";
+    if (lowerAlgorithm == "ida*" || lowerAlgorithm == "idastar") return "IDA*";
 
     return "";
 }
@@ -87,7 +89,7 @@ static string promptAlgorithm() {
     string algorithmName;
 
     while (algorithmName == "") {
-        cout << "Algoritma apa yang anda pilih? (UCS/GBFS/A*)\n";
+        cout << "Algoritma apa yang anda pilih? (UCS/GBFS/A*/IDA*)\n";
         if (!(cin >> algorithmInput)) throw runtime_error("Gagal membaca algoritma");
 
         algorithmName = normalizeAlgorithm(algorithmInput);
@@ -122,7 +124,7 @@ int main() {
         Board board = promptBoard();
         algorithmName = promptAlgorithm();
 
-        if (algorithmName == "A*" || algorithmName == "GBFS") {
+        if (algorithmName == "A*" || algorithmName == "GBFS" || algorithmName == "IDA*") {
             heuristicName = promptHeuristic();
         }
 
@@ -134,6 +136,7 @@ int main() {
 
         if (algorithmName == "UCS") result = UCS::solve(solverInput);
         else if (algorithmName == "GBFS") result = GBFS::solve(solverInput, heuristicName);
+        else if (algorithmName == "IDA*") result = IDAStar::solve(solverInput, heuristicName);
         else result = AStar::solve(solverInput, heuristicName);
 
         Printer::printSolution(board, result);
