@@ -30,7 +30,8 @@ void MainScreen::update(GUIController& controller) {
     Button loadGameButton("Load Game", getMenuOptionBounds(1));
     Button exitButton("Exit", getMenuOptionBounds(2));
 
-    if (loadGameButton.isClicked()) controller.openLoadGame();
+    if (newGameButton.isClicked()) controller.openNewGame();
+    else if (loadGameButton.isClicked()) controller.openLoadGame();
     else if (exitButton.isClicked()) controller.requestExit();
 }
 

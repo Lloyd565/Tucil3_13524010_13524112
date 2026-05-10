@@ -11,6 +11,7 @@ App::App()
         FrontendConfig::TARGET_FPS
     ),
       mainScreen(),
+      newGameScreen(),
       loadScreen() {}
 
 void App::run() {
@@ -20,6 +21,9 @@ void App::run() {
         if (controller.getActiveScreen() == GUIActiveScreen::MainMenu) {
             mainScreen.update(controller);
         }
+        else if (controller.getActiveScreen() == GUIActiveScreen::NewGame) {
+            newGameScreen.update(controller);
+        }
         else if (controller.getActiveScreen() == GUIActiveScreen::LoadGame) {
             loadScreen.update(controller);
         }
@@ -27,6 +31,7 @@ void App::run() {
         window.beginDrawing();
 
         if (controller.getActiveScreen() == GUIActiveScreen::MainMenu) mainScreen.draw();
+        else if (controller.getActiveScreen() == GUIActiveScreen::NewGame) newGameScreen.draw(controller);
         else if (controller.getActiveScreen() == GUIActiveScreen::LoadGame) loadScreen.draw(controller);
 
         window.endDrawing();
