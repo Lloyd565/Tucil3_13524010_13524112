@@ -7,6 +7,32 @@
 #include <algorithm>
 #include <string>
 
+struct HeuristicOption {
+    const char* key;
+    const char* label;
+};
+
+static const HeuristicOption ASTAR_HEURISTICS[] = {
+    {"H1", "Manhattan Checkpoint"},
+    {"H2", "Chebyshev Checkpoint"},
+    {"H3", "Euclidean Checkpoint"},
+    {"H4", "Manhattan Chain"},
+    {"H5", "Scaling Costn"}
+};
+
+static const HeuristicOption GBFS_HEURISTICS[] = {
+    {"H6", "TEMPLATEHEHEHEHE"}
+};
+
+static const HeuristicOption IDASTAR_HEURISTICS[] = {
+    {"H1", "Manhattan Checkpoint"},
+    {"H2", "Chebyshev Checkpoint"},
+    {"H3", "Euclidean Checkpoint"},
+    {"H4", "Manhattan Chain"},
+    {"H5", "Scaling Costn"},
+    {"H6", "TEMPLATEHEHEHEHE"}
+};
+
 static float getScreenWidthSafe() {
     return std::max(800, GetScreenWidth());
 }
@@ -65,13 +91,16 @@ static Rectangle getAlgorithmButtonBounds(int index) {
     return Rectangle{panel.x + 34.0f * scaleX(), panel.y + (88.0f + index * 56.0f) * scaleY(), panel.width - 68.0f * scaleX(), 44.0f * scaleY()};
 }
 
-static Rectangle getHeuristicButtonBounds(int index) {
+static Rectangle getHeuristicButtonBounds(int index, int optionCount) {
     const Rectangle panel = getConfigPanelBounds();
     const float startY = panel.y + 366.0f * scaleY();
     const float bottomPadding = 34.0f * scaleY();
     const float availableHeight = panel.y + panel.height - bottomPadding - startY;
     const float gap = 6.0f * scaleY();
-    const float buttonHeight = std::max(24.0f * scaleY(), (availableHeight - 5.0f * gap) / 6.0f);
+    const float buttonHeight = std::min(
+        44.0f * scaleY(),
+        std::max(28.0f * scaleY(), (availableHeight - (optionCount - 1) * gap) / optionCount)
+    );
 
     return Rectangle{
         panel.x + 34.0f * scaleX(),
@@ -87,13 +116,32 @@ static bool shouldShowHeuristics(const GUIController& controller) {
            controller.getSelectedAlgorithm() == "IDA*";
 }
 
+static const HeuristicOption* getHeuristicOptions(const std::string& algorithm, int& optionCount) {
+    if (algorithm == "A*") {
+        optionCount = 5;
+        return ASTAR_HEURISTICS;
+    }
+
+    if (algorithm == "GBFS") {
+        optionCount = 1;
+        return GBFS_HEURISTICS;
+    }
+
+    if (algorithm == "IDA*") {
+        optionCount = 6;
+        return IDASTAR_HEURISTICS;
+    }
+
+    optionCount = 0;
+    return nullptr;
+}
+
 ConfigScreen::ConfigScreen()
     : boardCanvas(getBoardBounds()),
       tileLegend(getLegendBounds()) {}
 
 void ConfigScreen::update(GUIController& controller) {
     const char* algorithms[] = {"UCS", "GBFS", "A*", "IDA*"};
-    const char* heuristics[] = {"H1", "H2", "H3", "H4", "H5", "H6"};
 
     boardCanvas.setBounds(getBoardBounds());
     tileLegend.setBounds(getLegendBounds());
@@ -110,9 +158,12 @@ void ConfigScreen::update(GUIController& controller) {
     }
 
     if (shouldShowHeuristics(controller)) {
-        for (int i = 0 ; i < 6 ; i++) {
-            if (Button(heuristics[i], getHeuristicButtonBounds(i)).isClicked()) {
-                controller.setSelectedHeuristic(heuristics[i]);
+        int optionCount = 0;
+        const HeuristicOption* heuristics = getHeuristicOptions(controller.getSelectedAlgorithm(), optionCount);
+
+        for (int i = 0 ; i < optionCount ; i++) {
+            if (Button(heuristics[i].label, getHeuristicButtonBounds(i, optionCount)).isClicked()) {
+                controller.setSelectedHeuristic(heuristics[i].key);
             }
         }
     }
@@ -131,7 +182,6 @@ void ConfigScreen::draw(const GUIController& controller) const {
     const char* algorithmTitle = "Algorithm";
     const char* heuristicTitle = "Heuristic";
     const char* algorithms[] = {"UCS", "GBFS", "A*", "IDA*"};
-    const char* heuristics[] = {"H1", "H2", "H3", "H4", "H5", "H6"};
     const Rectangle panel = getConfigPanelBounds();
     const int titleFontSize = static_cast<int>(38.0f * std::min(scaleX(), scaleY()));
     const int sectionFontSize = static_cast<int>(26.0f * std::min(scaleX(), scaleY()));
@@ -155,9 +205,12 @@ void ConfigScreen::draw(const GUIController& controller) const {
     }
 
     if (shouldShowHeuristics(controller)) {
+        int optionCount = 0;
+        const HeuristicOption* heuristics = getHeuristicOptions(controller.getSelectedAlgorithm(), optionCount);
+
         DrawText(heuristicTitle, static_cast<int>(panel.x + 34.0f * scaleX()), static_cast<int>(panel.y + 314.0f * scaleY()), sectionFontSize, Color{246, 248, 252, 255});
-        for (int i = 0 ; i < 6 ; i++) {
-            Button(heuristics[i], getHeuristicButtonBounds(i)).draw(controller.getSelectedHeuristic() == heuristics[i]);
+        for (int i = 0 ; i < optionCount ; i++) {
+            Button(heuristics[i].label, getHeuristicButtonBounds(i, optionCount)).draw(controller.getSelectedHeuristic() == heuristics[i].key);
         }
     }
 

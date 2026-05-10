@@ -47,6 +47,32 @@ static Board buildBoardFromPaintState(
     return Board(rows, cols, grid, costs, startPosition, goalPosition, maxNumber);
 }
 
+static bool isHeuristicAllowedForAlgorithm(
+    const std::string& algorithm,
+    const std::string& heuristic
+) {
+    if (algorithm == "A*") {
+        return heuristic == "H1" ||
+               heuristic == "H2" ||
+               heuristic == "H3" ||
+               heuristic == "H4" ||
+               heuristic == "H5";
+    }
+
+    if (algorithm == "GBFS") return heuristic == "H6";
+
+    if (algorithm == "IDA*") {
+        return heuristic == "H1" ||
+               heuristic == "H2" ||
+               heuristic == "H3" ||
+               heuristic == "H4" ||
+               heuristic == "H5" ||
+               heuristic == "H6";
+    }
+
+    return heuristic.empty();
+}
+
 GUIController::GUIController()
     : activeScreen(GUIActiveScreen::MainMenu),
       loadFileName(),
@@ -285,7 +311,7 @@ void GUIController::setSelectedAlgorithm(const std::string& algorithm) {
     selectedAlgorithm = algorithm;
     configMessage.clear();
 
-    if (algorithm != "A*" && algorithm != "GBFS" && algorithm != "IDA*") {
+    if (!isHeuristicAllowedForAlgorithm(algorithm, selectedHeuristic)) {
         selectedHeuristic.clear();
     }
 }
@@ -368,6 +394,11 @@ void GUIController::submitConfig() {
         return;
     }
 
+    if (!isHeuristicAllowedForAlgorithm(selectedAlgorithm, selectedHeuristic)) {
+        configMessage = "Choose a valid heuristic for this algorithm.";
+        return;
+    }
+
     try {
         if (paintBoardDirty || currentBoard.getRows() != paintRows || currentBoard.getCols() != paintCols) {
             currentBoard = buildBoardFromPaintState(paintBoard, paintRows, paintCols);
@@ -380,7 +411,7 @@ void GUIController::submitConfig() {
         SolverResult result;
 
         if (selectedAlgorithm == "UCS") result = UCS::solve(solverInput);
-        else if (selectedAlgorithm == "GBFS") result = GBFS::solve(solverInput, heuristic);
+        else if (selectedAlgorithm == "GBFS") result = GBFS::solve(solverInput);
         else if (selectedAlgorithm == "IDA*") result = IDAStar::solve(solverInput, heuristic);
         else result = AStar::solve(solverInput, heuristic);
 

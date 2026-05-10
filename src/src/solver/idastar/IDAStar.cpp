@@ -12,6 +12,7 @@
 #include "game/Movement.hpp"
 #include "game/Rules.hpp"
 #include "heuristic/astar/AStarHeuristic.hpp"
+#include "heuristic/gbfs/GBFSHeuristic.hpp"
 
 using namespace std;
 
@@ -28,6 +29,15 @@ static StateKey makeKey(const State& state) {
         state.getPlayerPosition().getCol(),
         state.getNextRequiredNumber()
     };
+}
+
+static int computeHeuristic(
+    const Board& board,
+    const State& state,
+    const string& heuristic
+) {
+    if (heuristic == "H6") return GBFSHeuristic::compute(board, state);
+    return AStarHeuristic::compute(board, state, heuristic);
 }
 
 static Direction getDirectionFromMove(char move) {
@@ -82,7 +92,7 @@ static SearchResult dfs(
     set<StateKey>& pathStates,
     State& finalResult
 ) {
-    int f = currentState.getTotalCost() + AStarHeuristic::compute(board, currentState, heuristic);
+    int f = currentState.getTotalCost() + computeHeuristic(board, currentState, heuristic);
 
     if (f > threshold) return {false, f};
 
@@ -125,7 +135,7 @@ SolverResult IDAStar::solve(const SolverInput& solverInput, const string& heuris
     const Board& board = solverInput.getBoard();
     const State& initialState = solverInput.getInitialState();
 
-    int threshold = AStarHeuristic::compute(board, initialState, heuristic);
+    int threshold = computeHeuristic(board, initialState, heuristic);
 
     auto startTime = chrono::high_resolution_clock::now();
 
