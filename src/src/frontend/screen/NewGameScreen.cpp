@@ -15,20 +15,32 @@ static float getScreenHeightSafe() {
     return std::max(600, GetScreenHeight());
 }
 
+static float scaleX() {
+    return getScreenWidthSafe() / 1280.0f;
+}
+
+static float scaleY() {
+    return getScreenHeightSafe() / 720.0f;
+}
+
 static Rectangle getSizeConfigBounds() {
-    return Rectangle{34.0f, 96.0f, 230.0f, getScreenHeightSafe() - 190.0f};
+    return Rectangle{34.0f * scaleX(), 96.0f * scaleY(), 230.0f * scaleX(), getScreenHeightSafe() - 190.0f * scaleY()};
 }
 
 static Rectangle getPaletteBounds() {
-    return Rectangle{getScreenWidthSafe() - 264.0f, 96.0f, 230.0f, getScreenHeightSafe() - 190.0f};
+    return Rectangle{getScreenWidthSafe() - 264.0f * scaleX(), 96.0f * scaleY(), 230.0f * scaleX(), getScreenHeightSafe() - 190.0f * scaleY()};
 }
 
 static Rectangle getBoardCanvasBounds() {
-    return Rectangle{286.0f, 82.0f, getScreenWidthSafe() - 572.0f, getScreenHeightSafe() - 148.0f};
+    return Rectangle{286.0f * scaleX(), 82.0f * scaleY(), getScreenWidthSafe() - 572.0f * scaleX(), getScreenHeightSafe() - 148.0f * scaleY()};
 }
 
 static Rectangle getEnterButtonBounds() {
-    return Rectangle{getScreenWidthSafe() - 190.0f, getScreenHeightSafe() - 72.0f, 140.0f, 54.0f};
+    return Rectangle{getScreenWidthSafe() - 190.0f * scaleX(), getScreenHeightSafe() - 72.0f * scaleY(), 140.0f * scaleX(), 54.0f * scaleY()};
+}
+
+static Rectangle getBackButtonBounds() {
+    return Rectangle{34.0f * scaleX(), 28.0f * scaleY(), 120.0f * scaleX(), 48.0f * scaleY()};
 }
 
 NewGameScreen::NewGameScreen()
@@ -41,6 +53,11 @@ void NewGameScreen::update(GUIController& controller) {
     int clickedCol = -1;
 
     boardCanvas.setBounds(getBoardCanvasBounds());
+
+    if (Button("Back", getBackButtonBounds()).isClicked()) {
+        controller.cancelNewGame();
+        return;
+    }
 
     const int rowDelta = sizeConfig.getRowDelta();
     const int colDelta = sizeConfig.getColDelta();
@@ -67,17 +84,18 @@ void NewGameScreen::update(GUIController& controller) {
 
 void NewGameScreen::draw(const GUIController& controller) const {
     const char* title = "New Game";
-    const int titleFontSize = 38;
+    const int titleFontSize = static_cast<int>(38.0f * std::min(scaleX(), scaleY()));
 
     ClearBackground(Color{22, 24, 30, 255});
     DrawText(
         title,
         static_cast<int>((getScreenWidthSafe() - MeasureText(title, titleFontSize)) / 2.0f),
-        28,
+        static_cast<int>(28.0f * scaleY()),
         titleFontSize,
         Color{246, 248, 252, 255}
     );
 
+    Button("Back", getBackButtonBounds()).draw();
     SizeConfig(getSizeConfigBounds()).draw(controller.getPaintRows(), controller.getPaintCols());
     boardCanvas.draw(controller.getPaintBoard());
     TilePalette(getPaletteBounds()).draw(controller.getSelectedPaintTile());
@@ -94,7 +112,7 @@ void NewGameScreen::draw(const GUIController& controller) const {
         DrawText(
             message.c_str(),
             static_cast<int>((getScreenWidthSafe() - textWidth) / 2.0f),
-            static_cast<int>(getScreenHeightSafe() - 58.0f),
+            static_cast<int>(getScreenHeightSafe() - 58.0f * scaleY()),
             fontSize,
             textColor
         );

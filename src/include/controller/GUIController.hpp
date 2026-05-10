@@ -23,6 +23,12 @@ class GUIController {
         std::vector<std::string> paintBoard;
         char selectedPaintTile;
         int nextPaintNumber;
+        GUIActiveScreen paintReturnScreen;
+        int savedPaintRows;
+        int savedPaintCols;
+        std::vector<std::string> savedPaintBoard;
+        char savedSelectedPaintTile;
+        int savedNextPaintNumber;
         std::string newGameMessage;
         std::string selectedAlgorithm;
         std::string selectedHeuristic;
@@ -39,6 +45,9 @@ class GUIController {
 
         int countPaintTile(char tile) const;
         void clearPaintTile(char tile);
+        void resetPaintBoard();
+        void savePaintSnapshot();
+        void restorePaintSnapshot();
         void preparePreviewSolution();
 
     public:
@@ -73,12 +82,16 @@ class GUIController {
         void openSolution();
         void openSave();
         void openMainMenu();
+        void returnToMainMenuFromConfig();
         void requestExit();
         void setPaintBoardSize(int rows, int cols);
         void setSelectedPaintTile(char tile);
         void paintTile(int row, int col);
         void setSelectedAlgorithm(const std::string& algorithm);
         void setSelectedHeuristic(const std::string& heuristic);
+        void cancelNewGame();
+        void cancelLoadGame();
+        void cancelSave();
         void submitNewGame();
         void submitLoadGame();
         void submitConfig();

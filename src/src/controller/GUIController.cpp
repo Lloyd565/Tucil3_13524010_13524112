@@ -12,6 +12,12 @@ GUIController::GUIController()
       paintBoard(6, std::string(6, '*')),
       selectedPaintTile('X'),
       nextPaintNumber(0),
+      paintReturnScreen(GUIActiveScreen::MainMenu),
+      savedPaintRows(6),
+      savedPaintCols(6),
+      savedPaintBoard(6, std::string(6, '*')),
+      savedSelectedPaintTile('X'),
+      savedNextPaintNumber(0),
       newGameMessage(),
       selectedAlgorithm(),
       selectedHeuristic(),
@@ -115,6 +121,15 @@ bool GUIController::shouldExit() const {
 }
 
 void GUIController::openNewGame() {
+    paintReturnScreen = activeScreen;
+
+    if (activeScreen == GUIActiveScreen::MainMenu) {
+        resetPaintBoard();
+    }
+    else {
+        savePaintSnapshot();
+    }
+
     activeScreen = GUIActiveScreen::NewGame;
 }
 
@@ -136,6 +151,22 @@ void GUIController::openSave() {
 }
 
 void GUIController::openMainMenu() {
+    activeScreen = GUIActiveScreen::MainMenu;
+}
+
+void GUIController::returnToMainMenuFromConfig() {
+    selectedAlgorithm.clear();
+    selectedHeuristic.clear();
+    configMessage.clear();
+    playbackPath.clear();
+    solutionMoves.clear();
+    solutionCost = 0;
+    solutionIterations = 0;
+    solutionExecutionTime = 0;
+    playbackIndex = 0;
+    playbackProgress = 0.0f;
+    playbackPlaying = false;
+    resetPaintBoard();
     activeScreen = GUIActiveScreen::MainMenu;
 }
 
@@ -200,6 +231,27 @@ void GUIController::setSelectedAlgorithm(const std::string& algorithm) {
 void GUIController::setSelectedHeuristic(const std::string& heuristic) {
     selectedHeuristic = heuristic;
     configMessage.clear();
+}
+
+void GUIController::cancelNewGame() {
+    if (paintReturnScreen == GUIActiveScreen::Config) {
+        restorePaintSnapshot();
+    }
+    else {
+        resetPaintBoard();
+    }
+
+    activeScreen = paintReturnScreen;
+}
+
+void GUIController::cancelLoadGame() {
+    loadFileName.clear();
+    activeScreen = GUIActiveScreen::MainMenu;
+}
+
+void GUIController::cancelSave() {
+    saveFileName.clear();
+    activeScreen = GUIActiveScreen::Solution;
 }
 
 void GUIController::submitNewGame() {
@@ -300,6 +352,32 @@ void GUIController::clearPaintTile(char tile) {
             if (currentTile == tile) currentTile = '*';
         }
     }
+}
+
+void GUIController::resetPaintBoard() {
+    paintRows = 6;
+    paintCols = 6;
+    paintBoard = std::vector<std::string>(paintRows, std::string(paintCols, '*'));
+    selectedPaintTile = 'X';
+    nextPaintNumber = 0;
+    newGameMessage.clear();
+}
+
+void GUIController::savePaintSnapshot() {
+    savedPaintRows = paintRows;
+    savedPaintCols = paintCols;
+    savedPaintBoard = paintBoard;
+    savedSelectedPaintTile = selectedPaintTile;
+    savedNextPaintNumber = nextPaintNumber;
+}
+
+void GUIController::restorePaintSnapshot() {
+    paintRows = savedPaintRows;
+    paintCols = savedPaintCols;
+    paintBoard = savedPaintBoard;
+    selectedPaintTile = savedSelectedPaintTile;
+    nextPaintNumber = savedNextPaintNumber;
+    newGameMessage.clear();
 }
 
 void GUIController::preparePreviewSolution() {

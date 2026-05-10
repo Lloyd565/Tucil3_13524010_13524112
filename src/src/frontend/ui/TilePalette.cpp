@@ -1,5 +1,6 @@
 #include "frontend/ui/TilePalette.hpp"
 
+#include <algorithm>
 #include <cctype>
 
 static Color getTileColor(char tile) {
@@ -44,11 +45,14 @@ TilePalette::TilePalette(Rectangle bounds)
     : bounds(bounds) {}
 
 Rectangle TilePalette::getTileBounds(int index) const {
+    const float xScale = bounds.width / 230.0f;
+    const float yScale = bounds.height / 530.0f;
+
     return Rectangle{
-        bounds.x + 28.0f,
-        bounds.y + 82.0f + index * 72.0f,
-        bounds.width - 56.0f,
-        54.0f
+        bounds.x + 28.0f * xScale,
+        bounds.y + (82.0f + index * 72.0f) * yScale,
+        bounds.width - 56.0f * xScale,
+        54.0f * yScale
     };
 }
 
@@ -66,7 +70,10 @@ char TilePalette::getClickedTile() const {
 
 void TilePalette::draw(char selectedTile) const {
     const char* title = "Tiles";
-    const int titleFontSize = 28;
+    const float xScale = bounds.width / 230.0f;
+    const float yScale = bounds.height / 530.0f;
+    const float uiScale = std::min(xScale, yScale);
+    const int titleFontSize = static_cast<int>(28.0f * uiScale);
     const int titleWidth = MeasureText(title, titleFontSize);
 
     DrawRectangleRounded(bounds, 0.06f, 12, Color{34, 38, 48, 255});
@@ -74,7 +81,7 @@ void TilePalette::draw(char selectedTile) const {
     DrawText(
         title,
         static_cast<int>(bounds.x + (bounds.width - titleWidth) / 2.0f),
-        static_cast<int>(bounds.y + 30.0f),
+        static_cast<int>(bounds.y + 30.0f * yScale),
         titleFontSize,
         Color{246, 248, 252, 255}
     );
@@ -86,11 +93,14 @@ void TilePalette::draw(char selectedTile) const {
 
 void TilePalette::drawTileOption(const char* label, char tile, int index, char selectedTile) const {
     const Rectangle optionBounds = getTileBounds(index);
+    const float xScale = bounds.width / 230.0f;
+    const float yScale = bounds.height / 530.0f;
+    const float uiScale = std::min(xScale, yScale);
     const Rectangle swatchBounds = {
-        optionBounds.x + 14.0f,
-        optionBounds.y + 10.0f,
-        34.0f,
-        34.0f
+        optionBounds.x + 14.0f * xScale,
+        optionBounds.y + 10.0f * yScale,
+        34.0f * uiScale,
+        34.0f * uiScale
     };
     const bool isSelected = tile == selectedTile;
     const bool isHovered = CheckCollisionPointRec(GetMousePosition(), optionBounds);
@@ -104,13 +114,13 @@ void TilePalette::drawTileOption(const char* label, char tile, int index, char s
     else DrawRectangleRec(swatchBounds, getTileColor(tile));
 
     DrawRectangleLinesEx(swatchBounds, 1.0f, Color{160, 168, 184, 255});
-    DrawText(label, static_cast<int>(optionBounds.x + 62.0f), static_cast<int>(optionBounds.y + 16.0f), 22, Color{246, 248, 252, 255});
+    DrawText(label, static_cast<int>(optionBounds.x + 62.0f * xScale), static_cast<int>(optionBounds.y + 16.0f * yScale), static_cast<int>(22.0f * uiScale), Color{246, 248, 252, 255});
 
     if (tile == 'N') {
-        DrawText("#", static_cast<int>(swatchBounds.x + 10.0f), static_cast<int>(swatchBounds.y + 7.0f), 20, Color{24, 29, 39, 255});
+        DrawText("#", static_cast<int>(swatchBounds.x + 10.0f * uiScale), static_cast<int>(swatchBounds.y + 7.0f * uiScale), static_cast<int>(20.0f * uiScale), Color{24, 29, 39, 255});
     }
     else if (isdigit(static_cast<unsigned char>(tile))) {
         const char text[2] = {tile, '\0'};
-        DrawText(text, static_cast<int>(swatchBounds.x + 10.0f), static_cast<int>(swatchBounds.y + 7.0f), 20, Color{24, 29, 39, 255});
+        DrawText(text, static_cast<int>(swatchBounds.x + 10.0f * uiScale), static_cast<int>(swatchBounds.y + 7.0f * uiScale), static_cast<int>(20.0f * uiScale), Color{24, 29, 39, 255});
     }
 }

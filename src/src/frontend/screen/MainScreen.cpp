@@ -3,6 +3,16 @@
 #include "frontend/ui/Button.hpp"
 #include "raylib.h"
 
+#include <algorithm>
+
+static float scaleX() {
+    return std::max(800, GetScreenWidth()) / 1280.0f;
+}
+
+static float scaleY() {
+    return std::max(600, GetScreenHeight()) / 720.0f;
+}
+
 static Rectangle getMenuOptionBounds(int index) {
     const float screenWidth = GetScreenWidth();
     const float screenHeight = GetScreenHeight();
@@ -10,8 +20,8 @@ static Rectangle getMenuOptionBounds(int index) {
     const float leftPanelWidth = screenWidth - rightPanelWidth;
     const float menuWidth = leftPanelWidth * 0.62f;
     const float menuX = (leftPanelWidth - menuWidth) / 2.0f;
-    const float optionHeight = 64.0f;
-    const float optionGap = 22.0f;
+    const float optionHeight = 64.0f * scaleY();
+    const float optionGap = 22.0f * scaleY();
     const float firstOptionY = screenHeight * 0.42f;
 
     return Rectangle{
@@ -42,7 +52,7 @@ void MainScreen::draw() const {
     const float leftPanelWidth = screenWidth - rightPanelWidth;
     const float margin = screenHeight * 0.06f;
     const char* title = "Tucil 3 Solver";
-    const int titleFontSize = 42;
+    const int titleFontSize = static_cast<int>(42.0f * std::min(scaleX(), scaleY()));
     const int titleWidth = MeasureText(title, titleFontSize);
 
     ClearBackground(Color{22, 24, 30, 255});

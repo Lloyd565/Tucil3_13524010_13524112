@@ -1,5 +1,7 @@
 #include "frontend/ui/Button.hpp"
 
+#include <algorithm>
+
 Button::Button(const char* text, Rectangle bounds)
     : text(text),
       bounds(bounds) {}
@@ -14,7 +16,7 @@ void Button::draw() const {
 }
 
 void Button::draw(bool isSelected) const {
-    const int fontSize = 28;
+    const int fontSize = std::max(18, std::min(34, static_cast<int>(bounds.height * 0.44f)));
     const int textWidth = MeasureText(text, fontSize);
     const int textX = static_cast<int>(bounds.x + (bounds.width - textWidth) / 2.0f);
     const int textY = static_cast<int>(bounds.y + (bounds.height - fontSize) / 2.0f);
