@@ -33,7 +33,7 @@ bool Validator::validateCostSize(
 bool Validator::validatePositiveCosts(const vector<vector<int>>& costLines) {
     for (const vector<int>& line : costLines) {
         for (int cost : line) {
-            if (cost <= 0) return false;
+            if (cost < 0) return false;
         }
     }
 
