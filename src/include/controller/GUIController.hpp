@@ -18,6 +18,8 @@ class GUIController {
         GUIActiveScreen activeScreen;
         std::string loadFileName;
         std::string saveFileName;
+        std::string loadMessage;
+        std::string saveMessage;
         int paintRows;
         int paintCols;
         std::vector<std::string> paintBoard;
@@ -58,6 +60,8 @@ class GUIController {
         std::string& getLoadFileName();
         const std::string& getSaveFileName() const;
         std::string& getSaveFileName();
+        const std::string& getLoadMessage() const;
+        const std::string& getSaveMessage() const;
         int getPaintRows() const;
         int getPaintCols() const;
         const std::vector<std::string>& getPaintBoard() const;

@@ -82,4 +82,18 @@ void LoadScreen::draw(const GUIController& controller) const {
     Button("Back", getBackButtonBounds()).draw();
     TextInput(inputBounds, "input.txt", static_cast<int>(28.0f * std::min(scaleX(), scaleY())), 120).draw(controller.getLoadFileName());
     Button("Enter", getEnterButtonBounds()).draw();
+
+    if (!controller.getLoadMessage().empty()) {
+        const std::string& message = controller.getLoadMessage();
+        const int messageFontSize = static_cast<int>(22.0f * std::min(scaleX(), scaleY()));
+        const int messageWidth = MeasureText(message.c_str(), messageFontSize);
+
+        DrawText(
+            message.c_str(),
+            static_cast<int>((screenWidth - messageWidth) / 2.0f),
+            static_cast<int>(inputBounds.y + inputBounds.height + 24.0f * scaleY()),
+            messageFontSize,
+            Color{255, 144, 144, 255}
+        );
+    }
 }

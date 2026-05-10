@@ -1,12 +1,86 @@
 #include "controller/GUIController.hpp"
 
+#include "model/Board.hpp"
+#include "model/Position.hpp"
+#include "model/State.hpp"
+#include "output/SolutionWriter.hpp"
+#include "parser/InputParser.hpp"
+#include "solver/SolverResult.hpp"
+
 #include <algorithm>
+#include <exception>
 #include <queue>
+#include <stdexcept>
+
+static Board buildBoardFromPaintState(
+    const std::vector<std::string>& paintBoard,
+    int rows,
+    int cols
+) {
+    std::vector<std::vector<char>> grid(rows, std::vector<char>(cols, '*'));
+    std::vector<std::vector<int>> costs(rows, std::vector<int>(cols, 1));
+    Position startPosition;
+    Position goalPosition;
+    int maxNumber = -1;
+
+    for (int row = 0 ; row < rows ; row++) {
+        for (int col = 0 ; col < cols ; col++) {
+            char tile = paintBoard[row][col];
+
+            if (tile == 'Z') {
+                startPosition = Position(row, col);
+                grid[row][col] = '*';
+            }
+            else {
+                grid[row][col] = tile;
+            }
+
+            if (tile == 'O') goalPosition = Position(row, col);
+            if (tile >= '0' && tile <= '9') maxNumber = std::max(maxNumber, tile - '0');
+        }
+    }
+
+    return Board(rows, cols, grid, costs, startPosition, goalPosition, maxNumber);
+}
+
+static SolverResult buildSolverResultFromPreview(
+    const std::vector<std::pair<int, int>>& playbackPath,
+    const std::string& solutionMoves,
+    int solutionCost,
+    int solutionIterations,
+    long long solutionExecutionTime
+) {
+    std::vector<State> solutionSteps;
+
+    for (int i = 0 ; i < static_cast<int>(playbackPath.size()) ; i++) {
+        const std::pair<int, int>& cell = playbackPath[i];
+        const std::string movesPrefix = solutionMoves.substr(0, std::min(i, static_cast<int>(solutionMoves.size())));
+
+        solutionSteps.push_back(State(
+            Position(cell.first, cell.second),
+            0,
+            std::min(i, solutionCost),
+            movesPrefix
+        ));
+    }
+
+    return SolverResult(
+        !solutionSteps.empty(),
+        solutionMoves,
+        solutionCost,
+        solutionIterations,
+        solutionExecutionTime,
+        solutionSteps,
+        std::vector<State>()
+    );
+}
 
 GUIController::GUIController()
     : activeScreen(GUIActiveScreen::MainMenu),
       loadFileName(),
       saveFileName(),
+      loadMessage(),
+      saveMessage(),
       paintRows(6),
       paintCols(6),
       paintBoard(6, std::string(6, '*')),
@@ -50,6 +124,14 @@ const std::string& GUIController::getSaveFileName() const {
 
 std::string& GUIController::getSaveFileName() {
     return saveFileName;
+}
+
+const std::string& GUIController::getLoadMessage() const {
+    return loadMessage;
+}
+
+const std::string& GUIController::getSaveMessage() const {
+    return saveMessage;
 }
 
 int GUIController::getPaintRows() const {
@@ -135,6 +217,7 @@ void GUIController::openNewGame() {
 
 void GUIController::openLoadGame() {
     activeScreen = GUIActiveScreen::LoadGame;
+    loadMessage.clear();
 }
 
 void GUIController::openConfig() {
@@ -148,6 +231,7 @@ void GUIController::openSolution() {
 
 void GUIController::openSave() {
     activeScreen = GUIActiveScreen::Save;
+    saveMessage.clear();
 }
 
 void GUIController::openMainMenu() {
@@ -246,11 +330,13 @@ void GUIController::cancelNewGame() {
 
 void GUIController::cancelLoadGame() {
     loadFileName.clear();
+    loadMessage.clear();
     activeScreen = GUIActiveScreen::MainMenu;
 }
 
 void GUIController::cancelSave() {
     saveFileName.clear();
+    saveMessage.clear();
     activeScreen = GUIActiveScreen::Solution;
 }
 
@@ -267,8 +353,28 @@ void GUIController::submitNewGame() {
 }
 
 void GUIController::submitLoadGame() {
-    // Board parsing and SolverInput creation will live here.
-    openConfig();
+    try {
+        Board board = InputParser::parseFile(loadFileName);
+
+        paintRows = board.getRows();
+        paintCols = board.getCols();
+        paintBoard = std::vector<std::string>(paintRows, std::string(paintCols, '*'));
+
+        for (int row = 0 ; row < paintRows ; row++) {
+            for (int col = 0 ; col < paintCols ; col++) {
+                paintBoard[row][col] = board.getTile(Position(row, col));
+            }
+        }
+
+        paintBoard[board.getStartPosition().getRow()][board.getStartPosition().getCol()] = 'Z';
+        selectedPaintTile = 'X';
+        nextPaintNumber = std::min(board.getMaxNumber() + 1, 10);
+        loadMessage.clear();
+        openConfig();
+    }
+    catch (const std::exception& error) {
+        loadMessage = error.what();
+    }
 }
 
 void GUIController::submitConfig() {
@@ -330,8 +436,31 @@ void GUIController::stepPlaybackForward() {
 }
 
 void GUIController::saveSolution() {
-    // Solution writing will live here.
-    openSolution();
+    try {
+        if (saveFileName.empty()) {
+            throw std::runtime_error("Output file name cannot be empty.");
+        }
+
+        Board board = buildBoardFromPaintState(paintBoard, paintRows, paintCols);
+        SolverResult result = buildSolverResultFromPreview(
+            playbackPath,
+            solutionMoves,
+            solutionCost,
+            solutionIterations,
+            solutionExecutionTime
+        );
+        const std::string heuristic = selectedHeuristic.empty() ? "-" : selectedHeuristic;
+
+        if (!SolutionWriter::save(saveFileName, board, result, selectedAlgorithm, heuristic)) {
+            throw std::runtime_error("Failed to save solution.");
+        }
+
+        saveMessage.clear();
+        openSolution();
+    }
+    catch (const std::exception& error) {
+        saveMessage = error.what();
+    }
 }
 
 int GUIController::countPaintTile(char tile) const {
