@@ -1,27 +1,25 @@
 #include "solver/gbfs/GBFS.hpp"
 #include "game/Movement.hpp"
 #include "game/Rules.hpp"
-#include "heuristic/astar/AStarHeuristic.hpp"
+#include "heuristic/gbfs/GBFSHeuristic.hpp"
 #include "model/PriorityQueue.hpp"
 #include "solver/Comparators.hpp"
 
 #include <chrono>
-#include <set>
-#include <tuple>
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 using namespace std;
-using StateKey = tuple<int, int, int>;
 
-static StateKey makeKey(const State& state) {
-    return {
-        state.getPlayerPosition().getRow(),
-        state.getPlayerPosition().getCol(),
-        state.getNextRequiredNumber()
-    };
+static string getStateKey(const State& state) {
+    const auto& pos = state.getPlayerPosition();
+    return to_string(pos.getRow()) + "," +
+           to_string(pos.getCol()) + "," +
+           to_string(state.getNextRequiredNumber());
 }
 
-static vector<State> reconstructPath(
+static vector<State> buildSolutionSteps(
     const Board& board,
     const State& initial,
     const State& goal
@@ -37,32 +35,26 @@ static vector<State> reconstructPath(
             current = next.value();
         }
     }
-
     return steps;
 }
 
-SolverResult GBFS::solve(const SolverInput& solverInput, const string& heuristic) {
+SolverResult GBFS::solve(const SolverInput& solverInput) {
     const Board& board = solverInput.getBoard();
-    const State& initial = solverInput.getInitialState();
-
+    const State& init = solverInput.getInitialState();
     auto startTime = chrono::high_resolution_clock::now();
 
     PriorityQueue<CompareGBFS> pq;
-
-    set<StateKey> visited;
+    unordered_set<string> visited;
     vector<State> exploredStates;
     int iterations = 0;
-
-    int initH = AStarHeuristic::compute(board, initial, heuristic);
-    pq.push(initial, initH);
+    int initH = GBFSHeuristic::compute(board, init);
+    pq.push(init, initH);
 
     while (!pq.empty()) {
         State state = pq.pop();
-
-        StateKey key = makeKey(state);
+        string key = getStateKey(state);
         if (visited.count(key)) continue;
         visited.insert(key);
-
         exploredStates.push_back(state);
         iterations++;
 
@@ -71,13 +63,13 @@ SolverResult GBFS::solve(const SolverInput& solverInput, const string& heuristic
             long long ms = chrono::duration_cast<chrono::milliseconds>(
                 endTime - startTime).count();
 
-            return SolverResult(true,state.getMoves(),state.getTotalCost(),iterations,ms,reconstructPath(board, initial, state),exploredStates);
+            return SolverResult(true, state.getMoves(), state.getTotalCost(), iterations, ms, buildSolutionSteps(board, init, state), exploredStates);
         }
 
         for (const State& next : Movement::getPossibleMoves(board, state)) {
-            StateKey nextKey = makeKey(next);
+            string nextKey = getStateKey(next);
             if (!visited.count(nextKey)) {
-                int nextH = AStarHeuristic::compute(board, next, heuristic);
+                int nextH = GBFSHeuristic::compute(board, next);
                 pq.push(next, nextH);
             }
         }
@@ -86,6 +78,5 @@ SolverResult GBFS::solve(const SolverInput& solverInput, const string& heuristic
     auto endTime = chrono::high_resolution_clock::now();
     long long ms = chrono::duration_cast<chrono::milliseconds>(
         endTime - startTime).count();
-
     return SolverResult::notFound(iterations, ms, exploredStates);
 }

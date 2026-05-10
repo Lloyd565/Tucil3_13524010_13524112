@@ -46,6 +46,7 @@ static string normalizeHeuristic(const string& heuristic) {
     if (lowerHeuristic == "h2") return "H2";
     if (lowerHeuristic == "h3") return "H3";
     if (lowerHeuristic == "h4") return "H4";
+    if (lowerHeuristic == "h5") return "H5";
 
     return "";
 }
@@ -104,7 +105,7 @@ static string promptHeuristic() {
     string heuristicName;
 
     while (heuristicName == "") {
-        cout << "Heuristic apa yang anda pilih? (H1/H2/H3/H4)\n";
+        cout << "Heuristic apa yang anda pilih? (H1/H2/H3/H4/H5)\n";
         if (!(cin >> heuristicInput)) throw runtime_error("Gagal membaca heuristic");
 
         heuristicName = normalizeHeuristic(heuristicInput);
@@ -123,7 +124,7 @@ int main() {
         Board board = promptBoard();
         algorithmName = promptAlgorithm();
 
-        if (algorithmName == "A*" || algorithmName == "GBFS") {
+        if (algorithmName == "A*") {
             heuristicName = promptHeuristic();
         }
 
@@ -134,7 +135,7 @@ int main() {
         cout << "Algoritma " << algorithmName << " digunakan.\n";
 
         if (algorithmName == "UCS") result = UCS::solve(solverInput);
-        else if (algorithmName == "GBFS") result = GBFS::solve(solverInput, heuristicName);
+        else if (algorithmName == "GBFS") result = GBFS::solve(solverInput);
         else result = AStar::solve(solverInput, heuristicName);
 
         Printer::printSolution(board, result);
