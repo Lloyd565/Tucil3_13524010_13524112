@@ -2,15 +2,13 @@
 
 #include "raylib.h"
 
-class Button {
+class PaintButton {
     private:
-        const char* text;
         Rectangle bounds;
 
     public:
-        Button(const char* text, Rectangle bounds);
+        PaintButton(Rectangle bounds);
 
         bool isClicked() const;
         void draw() const;
-        void draw(bool isSelected) const;
 };

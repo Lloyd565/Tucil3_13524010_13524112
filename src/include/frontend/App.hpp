@@ -2,6 +2,7 @@
 
 #include "controller/GUIController.hpp"
 #include "frontend/core/Window.hpp"
+#include "frontend/screen/ConfigScreen.hpp"
 #include "frontend/screen/LoadScreen.hpp"
 #include "frontend/screen/MainScreen.hpp"
 #include "frontend/screen/NewGameScreen.hpp"
@@ -13,6 +14,7 @@ class App {
         MainScreen mainScreen;
         NewGameScreen newGameScreen;
         LoadScreen loadScreen;
+        ConfigScreen configScreen;
 
     public:
         App();

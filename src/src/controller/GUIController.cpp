@@ -11,6 +11,9 @@ GUIController::GUIController()
       selectedPaintTile('X'),
       nextPaintNumber(0),
       newGameMessage(),
+      selectedAlgorithm(),
+      selectedHeuristic(),
+      configMessage(),
       exitRequested(false) {}
 
 GUIActiveScreen GUIController::getActiveScreen() const {
@@ -45,6 +48,18 @@ const std::string& GUIController::getNewGameMessage() const {
     return newGameMessage;
 }
 
+const std::string& GUIController::getSelectedAlgorithm() const {
+    return selectedAlgorithm;
+}
+
+const std::string& GUIController::getSelectedHeuristic() const {
+    return selectedHeuristic;
+}
+
+const std::string& GUIController::getConfigMessage() const {
+    return configMessage;
+}
+
 bool GUIController::shouldExit() const {
     return exitRequested;
 }
@@ -55,6 +70,11 @@ void GUIController::openNewGame() {
 
 void GUIController::openLoadGame() {
     activeScreen = GUIActiveScreen::LoadGame;
+}
+
+void GUIController::openConfig() {
+    activeScreen = GUIActiveScreen::Config;
+    configMessage.clear();
 }
 
 void GUIController::requestExit() {
@@ -106,6 +126,20 @@ void GUIController::paintTile(int row, int col) {
     newGameMessage.clear();
 }
 
+void GUIController::setSelectedAlgorithm(const std::string& algorithm) {
+    selectedAlgorithm = algorithm;
+    configMessage.clear();
+
+    if (algorithm != "A*" && algorithm != "GBFS") {
+        selectedHeuristic.clear();
+    }
+}
+
+void GUIController::setSelectedHeuristic(const std::string& heuristic) {
+    selectedHeuristic = heuristic;
+    configMessage.clear();
+}
+
 void GUIController::submitNewGame() {
     const int goalCount = countPaintTile('O');
     const int playerCount = countPaintTile('Z');
@@ -115,11 +149,26 @@ void GUIController::submitNewGame() {
         return;
     }
 
-    newGameMessage = "Board is ready. Next page will be added later.";
+    openConfig();
 }
 
 void GUIController::submitLoadGame() {
     // Board parsing and SolverInput creation will live here.
+    openConfig();
+}
+
+void GUIController::submitConfig() {
+    if (selectedAlgorithm.empty()) {
+        configMessage = "Choose an algorithm first.";
+        return;
+    }
+
+    if ((selectedAlgorithm == "A*" || selectedAlgorithm == "GBFS") && selectedHeuristic.empty()) {
+        configMessage = "Choose a heuristic for this algorithm.";
+        return;
+    }
+
+    configMessage = "Configuration is ready. Next page will be added later.";
 }
 
 int GUIController::countPaintTile(char tile) const {

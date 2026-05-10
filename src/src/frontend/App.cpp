@@ -12,7 +12,8 @@ App::App()
     ),
       mainScreen(),
       newGameScreen(),
-      loadScreen() {}
+      loadScreen(),
+      configScreen() {}
 
 void App::run() {
     while (!window.shouldClose() && !controller.shouldExit()) {
@@ -27,12 +28,16 @@ void App::run() {
         else if (controller.getActiveScreen() == GUIActiveScreen::LoadGame) {
             loadScreen.update(controller);
         }
+        else if (controller.getActiveScreen() == GUIActiveScreen::Config) {
+            configScreen.update(controller);
+        }
 
         window.beginDrawing();
 
         if (controller.getActiveScreen() == GUIActiveScreen::MainMenu) mainScreen.draw();
         else if (controller.getActiveScreen() == GUIActiveScreen::NewGame) newGameScreen.draw(controller);
         else if (controller.getActiveScreen() == GUIActiveScreen::LoadGame) loadScreen.draw(controller);
+        else if (controller.getActiveScreen() == GUIActiveScreen::Config) configScreen.draw(controller);
 
         window.endDrawing();
     }
