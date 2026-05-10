@@ -1,5 +1,8 @@
 #pragma once
 
+#include "model/Board.hpp"
+#include "solver/SolverResult.hpp"
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -31,9 +34,13 @@ class GUIController {
         std::vector<std::string> savedPaintBoard;
         char savedSelectedPaintTile;
         int savedNextPaintNumber;
+        bool paintBoardDirty;
+        bool savedPaintBoardDirty;
         std::string newGameMessage;
         std::string selectedAlgorithm;
         std::string selectedHeuristic;
+        Board currentBoard;
+        SolverResult currentResult;
         std::string configMessage;
         std::vector<std::pair<int, int>> playbackPath;
         std::string solutionMoves;
@@ -50,7 +57,7 @@ class GUIController {
         void resetPaintBoard();
         void savePaintSnapshot();
         void restorePaintSnapshot();
-        void preparePreviewSolution();
+        void loadSolutionFromResult(const SolverResult& result);
 
     public:
         GUIController();

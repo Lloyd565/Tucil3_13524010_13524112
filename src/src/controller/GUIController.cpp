@@ -5,11 +5,15 @@
 #include "model/State.hpp"
 #include "output/SolutionWriter.hpp"
 #include "parser/InputParser.hpp"
+#include "solver/SolverInput.hpp"
 #include "solver/SolverResult.hpp"
+#include "solver/astar/AStar.hpp"
+#include "solver/gbfs/GBFS.hpp"
+#include "solver/idastar/IDAStar.hpp"
+#include "solver/ucs/UCS.hpp"
 
 #include <algorithm>
 #include <exception>
-#include <queue>
 #include <stdexcept>
 
 static Board buildBoardFromPaintState(
@@ -43,38 +47,6 @@ static Board buildBoardFromPaintState(
     return Board(rows, cols, grid, costs, startPosition, goalPosition, maxNumber);
 }
 
-static SolverResult buildSolverResultFromPreview(
-    const std::vector<std::pair<int, int>>& playbackPath,
-    const std::string& solutionMoves,
-    int solutionCost,
-    int solutionIterations,
-    long long solutionExecutionTime
-) {
-    std::vector<State> solutionSteps;
-
-    for (int i = 0 ; i < static_cast<int>(playbackPath.size()) ; i++) {
-        const std::pair<int, int>& cell = playbackPath[i];
-        const std::string movesPrefix = solutionMoves.substr(0, std::min(i, static_cast<int>(solutionMoves.size())));
-
-        solutionSteps.push_back(State(
-            Position(cell.first, cell.second),
-            0,
-            std::min(i, solutionCost),
-            movesPrefix
-        ));
-    }
-
-    return SolverResult(
-        !solutionSteps.empty(),
-        solutionMoves,
-        solutionCost,
-        solutionIterations,
-        solutionExecutionTime,
-        solutionSteps,
-        std::vector<State>()
-    );
-}
-
 GUIController::GUIController()
     : activeScreen(GUIActiveScreen::MainMenu),
       loadFileName(),
@@ -92,9 +64,13 @@ GUIController::GUIController()
       savedPaintBoard(6, std::string(6, '*')),
       savedSelectedPaintTile('X'),
       savedNextPaintNumber(0),
+      paintBoardDirty(true),
+      savedPaintBoardDirty(true),
       newGameMessage(),
       selectedAlgorithm(),
       selectedHeuristic(),
+      currentBoard(),
+      currentResult(),
       configMessage(),
       playbackPath(),
       solutionMoves(),
@@ -275,6 +251,7 @@ void GUIController::setPaintBoardSize(int rows, int cols) {
     paintRows = rows;
     paintCols = cols;
     paintBoard = resizedBoard;
+    paintBoardDirty = true;
     newGameMessage.clear();
 }
 
@@ -300,6 +277,7 @@ void GUIController::paintTile(int row, int col) {
         paintBoard[row][col] = selectedPaintTile;
     }
 
+    paintBoardDirty = true;
     newGameMessage.clear();
 }
 
@@ -307,7 +285,7 @@ void GUIController::setSelectedAlgorithm(const std::string& algorithm) {
     selectedAlgorithm = algorithm;
     configMessage.clear();
 
-    if (algorithm != "A*" && algorithm != "GBFS") {
+    if (algorithm != "A*" && algorithm != "GBFS" && algorithm != "IDA*") {
         selectedHeuristic.clear();
     }
 }
@@ -369,6 +347,8 @@ void GUIController::submitLoadGame() {
         paintBoard[board.getStartPosition().getRow()][board.getStartPosition().getCol()] = 'Z';
         selectedPaintTile = 'X';
         nextPaintNumber = std::min(board.getMaxNumber() + 1, 10);
+        currentBoard = board;
+        paintBoardDirty = false;
         loadMessage.clear();
         openConfig();
     }
@@ -383,13 +363,34 @@ void GUIController::submitConfig() {
         return;
     }
 
-    if ((selectedAlgorithm == "A*" || selectedAlgorithm == "GBFS") && selectedHeuristic.empty()) {
+    if ((selectedAlgorithm == "A*" || selectedAlgorithm == "GBFS" || selectedAlgorithm == "IDA*") && selectedHeuristic.empty()) {
         configMessage = "Choose a heuristic for this algorithm.";
         return;
     }
 
-    preparePreviewSolution();
-    activeScreen = GUIActiveScreen::Solution;
+    try {
+        if (paintBoardDirty || currentBoard.getRows() != paintRows || currentBoard.getCols() != paintCols) {
+            currentBoard = buildBoardFromPaintState(paintBoard, paintRows, paintCols);
+            paintBoardDirty = false;
+        }
+
+        const std::string heuristic = selectedHeuristic.empty() ? "H1" : selectedHeuristic;
+        State initialState(currentBoard.getStartPosition(), 0, 0, "");
+        SolverInput solverInput(currentBoard, initialState);
+        SolverResult result;
+
+        if (selectedAlgorithm == "UCS") result = UCS::solve(solverInput);
+        else if (selectedAlgorithm == "GBFS") result = GBFS::solve(solverInput, heuristic);
+        else if (selectedAlgorithm == "IDA*") result = IDAStar::solve(solverInput, heuristic);
+        else result = AStar::solve(solverInput, heuristic);
+
+        loadSolutionFromResult(result);
+        configMessage.clear();
+        activeScreen = GUIActiveScreen::Solution;
+    }
+    catch (const std::exception& error) {
+        configMessage = error.what();
+    }
 }
 
 void GUIController::updatePlayback(float deltaTime) {
@@ -441,17 +442,9 @@ void GUIController::saveSolution() {
             throw std::runtime_error("Output file name cannot be empty.");
         }
 
-        Board board = buildBoardFromPaintState(paintBoard, paintRows, paintCols);
-        SolverResult result = buildSolverResultFromPreview(
-            playbackPath,
-            solutionMoves,
-            solutionCost,
-            solutionIterations,
-            solutionExecutionTime
-        );
         const std::string heuristic = selectedHeuristic.empty() ? "-" : selectedHeuristic;
 
-        if (!SolutionWriter::save(saveFileName, board, result, selectedAlgorithm, heuristic)) {
+        if (!SolutionWriter::save(saveFileName, currentBoard, currentResult, selectedAlgorithm, heuristic)) {
             throw std::runtime_error("Failed to save solution.");
         }
 
@@ -489,6 +482,7 @@ void GUIController::resetPaintBoard() {
     paintBoard = std::vector<std::string>(paintRows, std::string(paintCols, '*'));
     selectedPaintTile = 'X';
     nextPaintNumber = 0;
+    paintBoardDirty = true;
     newGameMessage.clear();
 }
 
@@ -498,6 +492,7 @@ void GUIController::savePaintSnapshot() {
     savedPaintBoard = paintBoard;
     savedSelectedPaintTile = selectedPaintTile;
     savedNextPaintNumber = nextPaintNumber;
+    savedPaintBoardDirty = paintBoardDirty;
 }
 
 void GUIController::restorePaintSnapshot() {
@@ -506,101 +501,29 @@ void GUIController::restorePaintSnapshot() {
     paintBoard = savedPaintBoard;
     selectedPaintTile = savedSelectedPaintTile;
     nextPaintNumber = savedNextPaintNumber;
+    paintBoardDirty = savedPaintBoardDirty;
     newGameMessage.clear();
 }
 
-void GUIController::preparePreviewSolution() {
-    const int rows = paintRows;
-    const int cols = paintCols;
-    std::pair<int, int> start = {0, 0};
-    std::pair<int, int> goal = {rows - 1, cols - 1};
-    bool hasStart = false;
-    bool hasGoal = false;
-
-    for (int row = 0 ; row < rows ; row++) {
-        for (int col = 0 ; col < cols ; col++) {
-            if (paintBoard[row][col] == 'Z') {
-                start = {row, col};
-                hasStart = true;
-            }
-            else if (paintBoard[row][col] == 'O') {
-                goal = {row, col};
-                hasGoal = true;
-            }
-        }
-    }
-
+void GUIController::loadSolutionFromResult(const SolverResult& result) {
+    currentResult = result;
     playbackPath.clear();
-    solutionMoves.clear();
-    solutionIterations = 0;
 
-    if (!hasStart) {
-        playbackPath.push_back(start);
-        solutionCost = 0;
-        solutionExecutionTime = 0;
-        playbackIndex = 0;
-        playbackProgress = 0.0f;
-        playbackPlaying = false;
-        return;
+    for (const State& step : result.getSolutionSteps()) {
+        const Position& position = step.getPlayerPosition();
+        playbackPath.push_back({position.getRow(), position.getCol()});
     }
 
-    std::vector<std::vector<int>> visited(rows, std::vector<int>(cols, 0));
-    std::vector<std::vector<std::pair<int, int>>> parent(rows, std::vector<std::pair<int, int>>(cols, {-1, -1}));
-    std::vector<std::vector<char>> parentMove(rows, std::vector<char>(cols, '\0'));
-    std::queue<std::pair<int, int>> queue;
-    const int rowDelta[4] = {-1, 1, 0, 0};
-    const int colDelta[4] = {0, 0, -1, 1};
-    const char moveChars[4] = {'U', 'D', 'L', 'R'};
-
-    queue.push(start);
-    visited[start.first][start.second] = 1;
-
-    while (!queue.empty()) {
-        std::pair<int, int> current = queue.front();
-        queue.pop();
-        solutionIterations++;
-
-        if (hasGoal && current == goal) break;
-
-        for (int i = 0 ; i < 4 ; i++) {
-            const int nextRow = current.first + rowDelta[i];
-            const int nextCol = current.second + colDelta[i];
-
-            if (nextRow < 0 || nextRow >= rows || nextCol < 0 || nextCol >= cols) continue;
-            if (visited[nextRow][nextCol]) continue;
-            if (paintBoard[nextRow][nextCol] == 'X' || paintBoard[nextRow][nextCol] == 'L') continue;
-
-            visited[nextRow][nextCol] = 1;
-            parent[nextRow][nextCol] = current;
-            parentMove[nextRow][nextCol] = moveChars[i];
-            queue.push({nextRow, nextCol});
-        }
+    if (playbackPath.empty() && currentBoard.getRows() > 0 && currentBoard.getCols() > 0) {
+        const Position& start = currentBoard.getStartPosition();
+        playbackPath.push_back({start.getRow(), start.getCol()});
     }
 
-    if (!hasGoal || !visited[goal.first][goal.second]) {
-        playbackPath.push_back(start);
-        solutionCost = 0;
-        solutionExecutionTime = solutionIterations;
-        playbackIndex = 0;
-        playbackProgress = 0.0f;
-        playbackPlaying = false;
-        return;
-    }
-
-    std::pair<int, int> current = goal;
-    while (current != start) {
-        playbackPath.push_back(current);
-        solutionMoves.push_back(parentMove[current.first][current.second]);
-        current = parent[current.first][current.second];
-    }
-    playbackPath.push_back(start);
-
-    std::reverse(playbackPath.begin(), playbackPath.end());
-    std::reverse(solutionMoves.begin(), solutionMoves.end());
-
-    solutionCost = solutionMoves.size();
-    solutionExecutionTime = std::max(1, solutionIterations / 2);
+    solutionMoves = result.isFound() ? result.getMoves() : "No solution";
+    solutionCost = result.getTotalCost();
+    solutionIterations = result.getIterations();
+    solutionExecutionTime = result.getExecutionTime();
     playbackIndex = 0;
     playbackProgress = 0.0f;
-    playbackPlaying = playbackPath.size() > 1;
+    playbackPlaying = result.isFound() && playbackPath.size() > 1;
 }

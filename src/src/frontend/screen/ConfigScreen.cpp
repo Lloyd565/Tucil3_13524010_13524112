@@ -66,7 +66,8 @@ static Rectangle getHeuristicButtonBounds(int index) {
 
 static bool shouldShowHeuristics(const GUIController& controller) {
     return controller.getSelectedAlgorithm() == "A*" ||
-           controller.getSelectedAlgorithm() == "GBFS";
+           controller.getSelectedAlgorithm() == "GBFS" ||
+           controller.getSelectedAlgorithm() == "IDA*";
 }
 
 ConfigScreen::ConfigScreen()
@@ -149,9 +150,7 @@ void ConfigScreen::draw(const GUIController& controller) const {
         const std::string& message = controller.getConfigMessage();
         const int fontSize = 22;
         const int textWidth = MeasureText(message.c_str(), fontSize);
-        const Color textColor = message.find("Choose") != std::string::npos ?
-                                Color{255, 144, 144, 255} :
-                                Color{154, 230, 168, 255};
+        const Color textColor = Color{255, 144, 144, 255};
 
         DrawText(
             message.c_str(),
