@@ -6,10 +6,39 @@
 using namespace std;
 
 BoardCanvas::BoardCanvas(Rectangle bounds)
-    : bounds(bounds) {}
+    : bounds(bounds),
+      isPainting(false),
+      lastPaintedRow(-1),
+      lastPaintedCol(-1) {}
 
-bool BoardCanvas::getClickedCell(int rows, int cols, int& row, int& col) const {
-    if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) return false;
+void BoardCanvas::setBounds(Rectangle bounds) {
+    this->bounds = bounds;
+}
+
+bool BoardCanvas::getPaintedCell(int rows, int cols, int& row, int& col) {
+    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        isPainting = false;
+        lastPaintedRow = -1;
+        lastPaintedCol = -1;
+    }
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        isPainting = true;
+        lastPaintedRow = -1;
+        lastPaintedCol = -1;
+    }
+
+    if (!isPainting || !IsMouseButtonDown(MOUSE_BUTTON_LEFT)) return false;
+    if (!getCellAtMouse(rows, cols, row, col)) return false;
+    if (row == lastPaintedRow && col == lastPaintedCol) return false;
+
+    lastPaintedRow = row;
+    lastPaintedCol = col;
+
+    return true;
+}
+
+bool BoardCanvas::getCellAtMouse(int rows, int cols, int& row, int& col) const {
     if (rows <= 0 || cols <= 0) return false;
     if (bounds.width <= 0.0f || bounds.height <= 0.0f) return false;
 

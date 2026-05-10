@@ -1,6 +1,5 @@
 #include "frontend/screen/NewGameScreen.hpp"
 
-#include "frontend/ui/BoardCanvas.hpp"
 #include "frontend/ui/Button.hpp"
 #include "frontend/ui/SizeConfig.hpp"
 #include "frontend/ui/TilePalette.hpp"
@@ -32,12 +31,16 @@ static Rectangle getEnterButtonBounds() {
     return Rectangle{getScreenWidthSafe() - 190.0f, getScreenHeightSafe() - 72.0f, 140.0f, 54.0f};
 }
 
+NewGameScreen::NewGameScreen()
+    : boardCanvas(getBoardCanvasBounds()) {}
+
 void NewGameScreen::update(GUIController& controller) {
     SizeConfig sizeConfig(getSizeConfigBounds());
     TilePalette tilePalette(getPaletteBounds());
-    BoardCanvas boardCanvas(getBoardCanvasBounds());
     int clickedRow = -1;
     int clickedCol = -1;
+
+    boardCanvas.setBounds(getBoardCanvasBounds());
 
     const int rowDelta = sizeConfig.getRowDelta();
     const int colDelta = sizeConfig.getColDelta();
@@ -53,7 +56,7 @@ void NewGameScreen::update(GUIController& controller) {
         controller.setSelectedPaintTile(selectedTile);
     }
 
-    if (boardCanvas.getClickedCell(controller.getPaintRows(), controller.getPaintCols(), clickedRow, clickedCol)) {
+    if (boardCanvas.getPaintedCell(controller.getPaintRows(), controller.getPaintCols(), clickedRow, clickedCol)) {
         controller.paintTile(clickedRow, clickedCol);
     }
 
@@ -76,7 +79,7 @@ void NewGameScreen::draw(const GUIController& controller) const {
     );
 
     SizeConfig(getSizeConfigBounds()).draw(controller.getPaintRows(), controller.getPaintCols());
-    BoardCanvas(getBoardCanvasBounds()).draw(controller.getPaintBoard());
+    boardCanvas.draw(controller.getPaintBoard());
     TilePalette(getPaletteBounds()).draw(controller.getSelectedPaintTile());
     Button("Enter", getEnterButtonBounds()).draw();
 
