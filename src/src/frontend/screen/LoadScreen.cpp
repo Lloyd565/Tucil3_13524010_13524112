@@ -74,7 +74,7 @@ void LoadScreen::draw(const GUIController& controller) const {
     DrawText(
         prompt,
         static_cast<int>((screenWidth - promptWidth) / 2.0f),
-        static_cast<int>(inputBounds.y - 44.0f),
+        static_cast<int>(inputBounds.y - 76.0f * scaleY()),
         promptFontSize,
         Color{204, 210, 222, 255}
     );

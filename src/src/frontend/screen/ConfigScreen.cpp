@@ -27,8 +27,25 @@ static Rectangle getConfigPanelBounds() {
     return Rectangle{34.0f * scaleX(), 82.0f * scaleY(), 380.0f * scaleX(), getScreenHeightSafe() - 142.0f * scaleY()};
 }
 
+static Rectangle getLegendBounds() {
+    return Rectangle{
+        getScreenWidthSafe() - 200.0f * scaleX(),
+        126.0f * scaleY(),
+        166.0f * scaleX(),
+        326.0f * scaleY()
+    };
+}
+
 static Rectangle getBoardBounds() {
-    return Rectangle{454.0f * scaleX(), 118.0f * scaleY(), getScreenWidthSafe() - 528.0f * scaleX(), getScreenHeightSafe() - 214.0f * scaleY()};
+    const Rectangle legend = getLegendBounds();
+    const float boardX = 454.0f * scaleX();
+
+    return Rectangle{
+        boardX,
+        118.0f * scaleY(),
+        legend.x - boardX - 28.0f * scaleX(),
+        getScreenHeightSafe() - 214.0f * scaleY()
+    };
 }
 
 static Rectangle getPaintButtonBounds() {
@@ -71,13 +88,15 @@ static bool shouldShowHeuristics(const GUIController& controller) {
 }
 
 ConfigScreen::ConfigScreen()
-    : boardCanvas(getBoardBounds()) {}
+    : boardCanvas(getBoardBounds()),
+      tileLegend(getLegendBounds()) {}
 
 void ConfigScreen::update(GUIController& controller) {
     const char* algorithms[] = {"UCS", "GBFS", "A*", "IDA*"};
     const char* heuristics[] = {"H1", "H2", "H3", "H4", "H5", "H6"};
 
     boardCanvas.setBounds(getBoardBounds());
+    tileLegend.setBounds(getLegendBounds());
 
     if (Button("Main Menu", getMainMenuButtonBounds()).isClicked()) {
         controller.returnToMainMenuFromConfig();
@@ -143,6 +162,7 @@ void ConfigScreen::draw(const GUIController& controller) const {
     }
 
     boardCanvas.draw(controller.getPaintBoard());
+    tileLegend.draw();
     PaintButton(getPaintButtonBounds()).draw();
     Button("Enter", getEnterButtonBounds()).draw();
 

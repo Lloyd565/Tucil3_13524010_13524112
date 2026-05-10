@@ -27,8 +27,25 @@ static Rectangle getInfoPanelBounds() {
     return Rectangle{34.0f * scaleX(), 118.0f * scaleY(), 330.0f * scaleX(), getScreenHeightSafe() - 188.0f * scaleY()};
 }
 
+static Rectangle getLegendBounds() {
+    return Rectangle{
+        getScreenWidthSafe() - 200.0f * scaleX(),
+        128.0f * scaleY(),
+        166.0f * scaleX(),
+        326.0f * scaleY()
+    };
+}
+
 static Rectangle getBoardBounds() {
-    return Rectangle{398.0f * scaleX(), 128.0f * scaleY(), getScreenWidthSafe() - 474.0f * scaleX(), getScreenHeightSafe() - 214.0f * scaleY()};
+    const Rectangle legend = getLegendBounds();
+    const float boardX = 398.0f * scaleX();
+
+    return Rectangle{
+        boardX,
+        128.0f * scaleY(),
+        legend.x - boardX - 28.0f * scaleX(),
+        getScreenHeightSafe() - 214.0f * scaleY()
+    };
 }
 
 static Rectangle getControlButtonBounds(int index) {
@@ -56,10 +73,12 @@ static void drawInfoLine(const char* label, const char* value, float x, float y)
 }
 
 SolutionScreen::SolutionScreen()
-    : animatedBoard(getBoardBounds()) {}
+    : animatedBoard(getBoardBounds()),
+      tileLegend(getLegendBounds()) {}
 
 void SolutionScreen::update(GUIController& controller) {
     animatedBoard.setBounds(getBoardBounds());
+    tileLegend.setBounds(getLegendBounds());
     controller.updatePlayback(GetFrameTime());
 
     if (Button("Pause", getControlButtonBounds(0)).isClicked()) controller.pausePlayback();
@@ -115,6 +134,7 @@ void SolutionScreen::draw(const GUIController& controller) const {
         controller.getPlaybackIndex(),
         controller.getPlaybackProgress()
     );
+    tileLegend.draw();
 
     Button("Save", getBottomButtonBounds(0)).draw();
     Button("Reconfigure", getBottomButtonBounds(1)).draw();

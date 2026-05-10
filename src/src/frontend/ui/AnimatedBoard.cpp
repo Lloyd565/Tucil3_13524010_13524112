@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 
 using namespace std;
 
@@ -44,7 +45,13 @@ void AnimatedBoard::draw(
             const float tileX = boardX + col * tileSize;
             const float tileY = boardY + row * tileSize;
 
-            drawTile(tile, tileX, tileY, tileSize);
+            drawTile(
+                tile,
+                tileX,
+                tileY,
+                tileSize,
+                isVisitedNumberTile(board, path, playbackIndex, playbackProgress, row, col)
+            );
             DrawRectangleLinesEx(Rectangle{tileX, tileY, tileSize, tileSize}, 1.0f, Color{72, 77, 88, 255});
         }
     }
@@ -64,17 +71,18 @@ void AnimatedBoard::draw(
     }
 }
 
-void AnimatedBoard::drawTile(char tile, float x, float y, float size) const {
+void AnimatedBoard::drawTile(char tile, float x, float y, float size, bool visitedNumberTile) const {
     Color tileColor = WHITE;
 
     if (tile == 'X') tileColor = Color{10, 10, 12, 255};
     else if (tile == 'L') tileColor = Color{220, 45, 45, 255};
     else if (tile == 'O') tileColor = Color{24, 150, 48, 255};
+    else if (visitedNumberTile) tileColor = Color{246, 241, 202, 255};
     else if (isdigit(static_cast<unsigned char>(tile))) tileColor = Color{250, 210, 60, 255};
 
     DrawRectangleRec(Rectangle{x, y, size, size}, tileColor);
 
-    if (isdigit(static_cast<unsigned char>(tile))) {
+    if (isdigit(static_cast<unsigned char>(tile)) && !visitedNumberTile) {
         const int fontSize = static_cast<int>(size * 0.42f);
         const char text[2] = {tile, '\0'};
         const int textWidth = MeasureText(text, fontSize);
@@ -87,6 +95,48 @@ void AnimatedBoard::drawTile(char tile, float x, float y, float size) const {
             Color{24, 29, 39, 255}
         );
     }
+}
+
+bool AnimatedBoard::isVisitedNumberTile(
+    const vector<string>& board,
+    const vector<pair<int, int>>& path,
+    int playbackIndex,
+    float playbackProgress,
+    int row,
+    int col
+) const {
+    if (!isdigit(static_cast<unsigned char>(board[row][col]))) return false;
+    if (path.size() <= 1) return false;
+
+    const int currentIndex = max(0, min(playbackIndex, (int) path.size() - 1));
+    const float clampedProgress = max(0.0f, min(playbackProgress, 1.0f));
+
+    for (int i = 0 ; i < currentIndex ; i++) {
+        const int startRow = path[i].first;
+        const int startCol = path[i].second;
+        const int endRow = path[i + 1].first;
+        const int endCol = path[i + 1].second;
+
+        if (startRow == endRow && row == startRow && col >= min(startCol, endCol) && col <= max(startCol, endCol)) return true;
+        if (startCol == endCol && col == startCol && row >= min(startRow, endRow) && row <= max(startRow, endRow)) return true;
+    }
+
+    if (currentIndex >= (int) path.size() - 1) return false;
+
+    const int startRow = path[currentIndex].first;
+    const int startCol = path[currentIndex].second;
+    const int endRow = path[currentIndex + 1].first;
+    const int endCol = path[currentIndex + 1].second;
+    const int rowDelta = (endRow > startRow) - (endRow < startRow);
+    const int colDelta = (endCol > startCol) - (endCol < startCol);
+    const int distance = abs(endRow - startRow) + abs(endCol - startCol);
+    const int reachedDistance = static_cast<int>(distance * clampedProgress);
+
+    for (int step = 0 ; step <= reachedDistance ; step++) {
+        if (row == startRow + rowDelta * step && col == startCol + colDelta * step) return true;
+    }
+
+    return false;
 }
 
 void AnimatedBoard::drawPlayer(float x, float y, float size) const {
