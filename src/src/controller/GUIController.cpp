@@ -6,6 +6,7 @@
 GUIController::GUIController()
     : activeScreen(GUIActiveScreen::MainMenu),
       loadFileName(),
+      saveFileName(),
       paintRows(6),
       paintCols(6),
       paintBoard(6, std::string(6, '*')),
@@ -35,6 +36,14 @@ const std::string& GUIController::getLoadFileName() const {
 
 std::string& GUIController::getLoadFileName() {
     return loadFileName;
+}
+
+const std::string& GUIController::getSaveFileName() const {
+    return saveFileName;
+}
+
+std::string& GUIController::getSaveFileName() {
+    return saveFileName;
 }
 
 int GUIController::getPaintRows() const {
@@ -116,6 +125,14 @@ void GUIController::openLoadGame() {
 void GUIController::openConfig() {
     activeScreen = GUIActiveScreen::Config;
     configMessage.clear();
+}
+
+void GUIController::openSolution() {
+    activeScreen = GUIActiveScreen::Solution;
+}
+
+void GUIController::openSave() {
+    activeScreen = GUIActiveScreen::Save;
 }
 
 void GUIController::openMainMenu() {
@@ -261,7 +278,8 @@ void GUIController::stepPlaybackForward() {
 }
 
 void GUIController::saveSolution() {
-    // Solution saving will live here.
+    // Solution writing will live here.
+    openSolution();
 }
 
 int GUIController::countPaintTile(char tile) const {

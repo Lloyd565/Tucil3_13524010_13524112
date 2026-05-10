@@ -9,13 +9,15 @@ enum class GUIActiveScreen {
     NewGame,
     LoadGame,
     Config,
-    Solution
+    Solution,
+    Save
 };
 
 class GUIController {
     private:
         GUIActiveScreen activeScreen;
         std::string loadFileName;
+        std::string saveFileName;
         int paintRows;
         int paintCols;
         std::vector<std::string> paintBoard;
@@ -45,6 +47,8 @@ class GUIController {
         GUIActiveScreen getActiveScreen() const;
         const std::string& getLoadFileName() const;
         std::string& getLoadFileName();
+        const std::string& getSaveFileName() const;
+        std::string& getSaveFileName();
         int getPaintRows() const;
         int getPaintCols() const;
         const std::vector<std::string>& getPaintBoard() const;
@@ -66,6 +70,8 @@ class GUIController {
         void openNewGame();
         void openLoadGame();
         void openConfig();
+        void openSolution();
+        void openSave();
         void openMainMenu();
         void requestExit();
         void setPaintBoardSize(int rows, int cols);

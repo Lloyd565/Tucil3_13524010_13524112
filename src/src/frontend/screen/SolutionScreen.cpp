@@ -58,7 +58,7 @@ void SolutionScreen::update(GUIController& controller) {
     if (Button("Back", getControlButtonBounds(3)).isClicked()) controller.stepPlaybackBack();
     if (Button("Forward", getControlButtonBounds(4)).isClicked()) controller.stepPlaybackForward();
 
-    if (Button("Save", getBottomButtonBounds(0)).isClicked()) controller.saveSolution();
+    if (Button("Save", getBottomButtonBounds(0)).isClicked()) controller.openSave();
     if (Button("Main Menu", getBottomButtonBounds(1)).isClicked()) controller.openMainMenu();
     if (Button("Reconfigure", getBottomButtonBounds(2)).isClicked()) controller.openConfig();
 }
