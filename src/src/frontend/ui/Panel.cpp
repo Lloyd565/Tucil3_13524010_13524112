@@ -5,6 +5,13 @@
 Panel::Panel(float x, float y, float width, float height, const std::string& text)
     : x(x), y(y), width(width), height(height), text(text) {}
 
+void Panel::setBounds(float x, float y, float width, float height) {
+    this->x = x;
+    this->y = y;
+    this->width = width;
+    this->height = height;
+}
+
 void Panel::draw() const {
     const Rectangle bounds = {x, y, width, height};
     const int fontSize = 32;

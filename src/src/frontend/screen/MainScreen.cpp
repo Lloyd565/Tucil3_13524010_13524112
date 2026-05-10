@@ -1,18 +1,21 @@
 #include "frontend/screen/MainScreen.hpp"
 
-#include "frontend/config/FrontendConfig.hpp"
 #include "raylib.h"
 
 MainScreen::MainScreen()
-    : panel(
-        FrontendConfig::WINDOW_WIDTH / 2.0f - 220.0f,
-        FrontendConfig::WINDOW_HEIGHT / 2.0f - 80.0f,
-        440.0f,
-        160.0f,
-        "Hello, World!"
-    ) {}
+    : boardView() {}
 
 void MainScreen::draw() const {
-    ClearBackground(Color{238, 241, 245, 255});
-    panel.draw();
+    const float screenWidth = GetScreenWidth();
+    const float screenHeight = GetScreenHeight();
+    const float rightPanelWidth = screenWidth * 0.55f;
+    const float margin = screenHeight * 0.06f;
+
+    ClearBackground(Color{22, 24, 30, 255});
+    boardView.draw(
+        screenWidth - rightPanelWidth,
+        margin,
+        rightPanelWidth,
+        screenHeight - 2.0f * margin
+    );
 }

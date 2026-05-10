@@ -1,24 +1,26 @@
-#ifndef FRONTEND_CORE_WINDOW_HPP
-#define FRONTEND_CORE_WINDOW_HPP
+#pragma once
 
 #include <string>
 
 class Window {
-public:
-    Window(int width, int height, const std::string& title, int targetFps);
-    ~Window();
+    private:
+        int width;
+        int height;
+        int windowedX;
+        int windowedY;
+        std::string title;
 
-    Window(const Window&) = delete;
-    Window& operator=(const Window&) = delete;
+        void toggleFullscreen();
 
-    bool shouldClose() const;
-    void beginDrawing() const;
-    void endDrawing() const;
+    public:
+        Window(int width, int height, const std::string& title, int targetFps);
+        ~Window();
 
-private:
-    int width;
-    int height;
-    std::string title;
+        Window(const Window&) = delete;
+        Window& operator=(const Window&) = delete;
+
+        bool shouldClose() const;
+        void handleInput();
+        void beginDrawing() const;
+        void endDrawing() const;
 };
-
-#endif

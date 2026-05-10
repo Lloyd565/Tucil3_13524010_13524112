@@ -13,6 +13,7 @@ App::App()
 
 void App::run() {
     while (!window.shouldClose()) {
+        window.handleInput();
         window.beginDrawing();
         mainScreen.draw();
         window.endDrawing();

@@ -1,20 +1,18 @@
-#ifndef FRONTEND_UI_PANEL_HPP
-#define FRONTEND_UI_PANEL_HPP
+#pragma once
 
 #include <string>
 
 class Panel {
-public:
-    Panel(float x, float y, float width, float height, const std::string& text);
+    private:
+        float x;
+        float y;
+        float width;
+        float height;
+        std::string text;
 
-    void draw() const;
+    public:
+        Panel(float x, float y, float width, float height, const std::string& text);
 
-private:
-    float x;
-    float y;
-    float width;
-    float height;
-    std::string text;
+        void draw() const;
+        void setBounds(float x, float y, float width, float height);
 };
-
-#endif

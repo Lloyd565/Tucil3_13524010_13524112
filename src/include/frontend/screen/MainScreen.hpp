@@ -1,16 +1,12 @@
-#ifndef FRONTEND_SCREEN_MAINSCREEN_HPP
-#define FRONTEND_SCREEN_MAINSCREEN_HPP
+#pragma once
 
-#include "frontend/ui/Panel.hpp"
+#include "frontend/ui/BoardView.hpp"
 
 class MainScreen {
-public:
-    MainScreen();
+    private:
+        BoardView boardView;
 
-    void draw() const;
-
-private:
-    Panel panel;
+    public:
+        MainScreen();
+        void draw() const;
 };
-
-#endif
