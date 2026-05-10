@@ -1,12 +1,11 @@
 #include "solver/gbfs/GBFS.hpp"
 #include "game/Movement.hpp"
 #include "game/Rules.hpp"
-#include "heuristic/gbfs/GBFSHeuristic.hpp"
+#include "heuristic/astar/AStarHeuristic.hpp"
 #include "model/PriorityQueue.hpp"
 #include "solver/Comparators.hpp"
 
 #include <chrono>
-#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -38,7 +37,7 @@ static vector<State> buildSolutionSteps(
     return steps;
 }
 
-SolverResult GBFS::solve(const SolverInput& solverInput) {
+SolverResult GBFS::solve(const SolverInput& solverInput, const string& heuristic) {
     const Board& board = solverInput.getBoard();
     const State& init = solverInput.getInitialState();
     auto startTime = chrono::high_resolution_clock::now();
@@ -47,7 +46,7 @@ SolverResult GBFS::solve(const SolverInput& solverInput) {
     unordered_set<string> visited;
     vector<State> exploredStates;
     int iterations = 0;
-    int initH = GBFSHeuristic::compute(board, init);
+    int initH = AStarHeuristic::compute(board, init, heuristic);
     pq.push(init, initH);
 
     while (!pq.empty()) {
@@ -69,7 +68,7 @@ SolverResult GBFS::solve(const SolverInput& solverInput) {
         for (const State& next : Movement::getPossibleMoves(board, state)) {
             string nextKey = getStateKey(next);
             if (!visited.count(nextKey)) {
-                int nextH = GBFSHeuristic::compute(board, next);
+                int nextH = AStarHeuristic::compute(board, next, heuristic);
                 pq.push(next, nextH);
             }
         }
