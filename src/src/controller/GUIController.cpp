@@ -51,23 +51,12 @@ static bool isHeuristicAllowedForAlgorithm(
     const std::string& algorithm,
     const std::string& heuristic
 ) {
-    if (algorithm == "A*") {
+    if (algorithm == "A*" || algorithm == "GBFS" || algorithm == "IDA*") {
         return heuristic == "H1" ||
                heuristic == "H2" ||
                heuristic == "H3" ||
                heuristic == "H4" ||
                heuristic == "H5";
-    }
-
-    if (algorithm == "GBFS") return heuristic == "H6";
-
-    if (algorithm == "IDA*") {
-        return heuristic == "H1" ||
-               heuristic == "H2" ||
-               heuristic == "H3" ||
-               heuristic == "H4" ||
-               heuristic == "H5" ||
-               heuristic == "H6";
     }
 
     return heuristic.empty();
@@ -411,7 +400,7 @@ void GUIController::submitConfig() {
         SolverResult result;
 
         if (selectedAlgorithm == "UCS") result = UCS::solve(solverInput);
-        else if (selectedAlgorithm == "GBFS") result = GBFS::solve(solverInput);
+        else if (selectedAlgorithm == "GBFS") result = GBFS::solve(solverInput, heuristic);
         else if (selectedAlgorithm == "IDA*") result = IDAStar::solve(solverInput, heuristic);
         else result = AStar::solve(solverInput, heuristic);
 

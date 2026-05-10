@@ -20,19 +20,6 @@ static const HeuristicOption ASTAR_HEURISTICS[] = {
     {"H5", "Scaling Costn"}
 };
 
-static const HeuristicOption GBFS_HEURISTICS[] = {
-    {"H6", "TEMPLATEHEHEHEHE"}
-};
-
-static const HeuristicOption IDASTAR_HEURISTICS[] = {
-    {"H1", "Manhattan Checkpoint"},
-    {"H2", "Chebyshev Checkpoint"},
-    {"H3", "Euclidean Checkpoint"},
-    {"H4", "Manhattan Chain"},
-    {"H5", "Scaling Costn"},
-    {"H6", "TEMPLATEHEHEHEHE"}
-};
-
 static float getScreenWidthSafe() {
     return std::max(800, GetScreenWidth());
 }
@@ -117,19 +104,9 @@ static bool shouldShowHeuristics(const GUIController& controller) {
 }
 
 static const HeuristicOption* getHeuristicOptions(const std::string& algorithm, int& optionCount) {
-    if (algorithm == "A*") {
+    if (algorithm == "A*" || algorithm == "GBFS" || algorithm == "IDA*") {
         optionCount = 5;
         return ASTAR_HEURISTICS;
-    }
-
-    if (algorithm == "GBFS") {
-        optionCount = 1;
-        return GBFS_HEURISTICS;
-    }
-
-    if (algorithm == "IDA*") {
-        optionCount = 6;
-        return IDASTAR_HEURISTICS;
     }
 
     optionCount = 0;

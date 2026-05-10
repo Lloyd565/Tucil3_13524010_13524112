@@ -12,7 +12,6 @@
 #include "game/Movement.hpp"
 #include "game/Rules.hpp"
 #include "heuristic/astar/AStarHeuristic.hpp"
-#include "heuristic/gbfs/GBFSHeuristic.hpp"
 
 using namespace std;
 
@@ -36,7 +35,6 @@ static int computeHeuristic(
     const State& state,
     const string& heuristic
 ) {
-    if (heuristic == "H6") return GBFSHeuristic::compute(board, state);
     return AStarHeuristic::compute(board, state, heuristic);
 }
 
