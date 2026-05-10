@@ -82,17 +82,20 @@ void AnimatedBoard::drawTile(char tile, float x, float y, float size, bool visit
 
     DrawRectangleRec(Rectangle{x, y, size, size}, tileColor);
 
-    if (isdigit(static_cast<unsigned char>(tile)) && !visitedNumberTile) {
+    if (isdigit(static_cast<unsigned char>(tile))) {
         const int fontSize = static_cast<int>(size * 0.42f);
         const char text[2] = {tile, '\0'};
         const int textWidth = MeasureText(text, fontSize);
+        const Color textColor = visitedNumberTile ?
+                                Color{118, 113, 76, 255} :
+                                Color{24, 29, 39, 255};
 
         DrawText(
             text,
             static_cast<int>(x + (size - textWidth) / 2.0f),
             static_cast<int>(y + (size - fontSize) / 2.0f),
             fontSize,
-            Color{24, 29, 39, 255}
+            textColor
         );
     }
 }

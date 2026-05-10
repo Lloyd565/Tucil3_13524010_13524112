@@ -94,6 +94,7 @@ GUIController::GUIController()
       solutionExecutionTime(0),
       playbackIndex(0),
       playbackProgress(0.0f),
+      playbackSpeed(2.5f),
       playbackPlaying(true),
       exitRequested(false) {}
 
@@ -185,6 +186,10 @@ float GUIController::getPlaybackProgress() const {
     return playbackProgress;
 }
 
+float GUIController::getPlaybackSpeed() const {
+    return playbackSpeed;
+}
+
 bool GUIController::isPlaybackPlaying() const {
     return playbackPlaying;
 }
@@ -240,6 +245,7 @@ void GUIController::returnToMainMenuFromConfig() {
     solutionExecutionTime = 0;
     playbackIndex = 0;
     playbackProgress = 0.0f;
+    playbackSpeed = 2.5f;
     playbackPlaying = false;
     resetPaintBoard();
     activeScreen = GUIActiveScreen::MainMenu;
@@ -417,7 +423,7 @@ void GUIController::updatePlayback(float deltaTime) {
     if (!playbackPlaying || playbackPath.size() <= 1) return;
     if (playbackIndex >= (int) playbackPath.size() - 1) return;
 
-    playbackProgress += deltaTime * 2.5f;
+    playbackProgress += deltaTime * playbackSpeed;
     while (playbackProgress >= 1.0f && playbackIndex < (int) playbackPath.size() - 1) {
         playbackProgress -= 1.0f;
         playbackIndex++;
@@ -454,6 +460,14 @@ void GUIController::stepPlaybackForward() {
     playbackPlaying = false;
     playbackProgress = 0.0f;
     if (playbackIndex < (int) playbackPath.size() - 1) playbackIndex++;
+}
+
+void GUIController::slowDownPlayback() {
+    playbackSpeed = std::max(0.5f, playbackSpeed - 0.5f);
+}
+
+void GUIController::speedUpPlayback() {
+    playbackSpeed = std::min(8.0f, playbackSpeed + 0.5f);
 }
 
 void GUIController::saveSolution() {
@@ -545,5 +559,6 @@ void GUIController::loadSolutionFromResult(const SolverResult& result) {
     solutionExecutionTime = result.getExecutionTime();
     playbackIndex = 0;
     playbackProgress = 0.0f;
+    playbackSpeed = 2.5f;
     playbackPlaying = result.isFound() && playbackPath.size() > 1;
 }

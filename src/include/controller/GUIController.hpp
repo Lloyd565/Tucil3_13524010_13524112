@@ -49,6 +49,7 @@ class GUIController {
         long long solutionExecutionTime;
         int playbackIndex;
         float playbackProgress;
+        float playbackSpeed;
         bool playbackPlaying;
         bool exitRequested;
 
@@ -84,6 +85,7 @@ class GUIController {
         long long getSolutionExecutionTime() const;
         int getPlaybackIndex() const;
         float getPlaybackProgress() const;
+        float getPlaybackSpeed() const;
         bool isPlaybackPlaying() const;
         bool shouldExit() const;
 
@@ -112,5 +114,7 @@ class GUIController {
         void stopPlayback();
         void stepPlaybackBack();
         void stepPlaybackForward();
+        void slowDownPlayback();
+        void speedUpPlayback();
         void saveSolution();
 };

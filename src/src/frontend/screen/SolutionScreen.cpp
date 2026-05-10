@@ -49,9 +49,9 @@ static Rectangle getBoardBounds() {
 }
 
 static Rectangle getControlButtonBounds(int index) {
-    const float width = 126.0f * scaleX();
-    const float gap = 14.0f * scaleX();
-    const float totalWidth = 5.0f * width + 4.0f * gap;
+    const float width = 108.0f * scaleX();
+    const float gap = 12.0f * scaleX();
+    const float totalWidth = 6.0f * width + 5.0f * gap;
     const float startX = (getScreenWidthSafe() - totalWidth) / 2.0f;
 
     return Rectangle{startX + index * (width + gap), 48.0f * scaleY(), width, 48.0f * scaleY()};
@@ -72,6 +72,20 @@ static void drawInfoLine(const char* label, const char* value, float x, float y)
     DrawText(value, static_cast<int>(x), static_cast<int>(y + 28.0f * scaleY()), valueFontSize, Color{246, 248, 252, 255});
 }
 
+static bool isPlaybackFinished(const GUIController& controller) {
+    const std::vector<std::pair<int, int>>& path = controller.getPlaybackPath();
+
+    return !controller.isPlaybackPlaying() &&
+           path.size() > 1 &&
+           controller.getPlaybackIndex() >= static_cast<int>(path.size()) - 1;
+}
+
+static const char* getPlaybackToggleText(const GUIController& controller) {
+    if (controller.isPlaybackPlaying()) return "Pause";
+    if (controller.getPlaybackIndex() == 0 && controller.getPlaybackProgress() == 0.0f) return "Start";
+    return "Resume";
+}
+
 SolutionScreen::SolutionScreen()
     : animatedBoard(getBoardBounds()),
       tileLegend(getLegendBounds()) {}
@@ -81,11 +95,15 @@ void SolutionScreen::update(GUIController& controller) {
     tileLegend.setBounds(getLegendBounds());
     controller.updatePlayback(GetFrameTime());
 
-    if (Button("Pause", getControlButtonBounds(0)).isClicked()) controller.pausePlayback();
-    if (Button("Resume", getControlButtonBounds(1)).isClicked()) controller.resumePlayback();
-    if (Button("Stop", getControlButtonBounds(2)).isClicked()) controller.stopPlayback();
-    if (Button("Back", getControlButtonBounds(3)).isClicked()) controller.stepPlaybackBack();
+    if (Button("Slow", getControlButtonBounds(0)).isClicked()) controller.slowDownPlayback();
+    if (Button("Back", getControlButtonBounds(1)).isClicked()) controller.stepPlaybackBack();
+    if (Button(getPlaybackToggleText(controller), getControlButtonBounds(2)).isClicked()) {
+        if (controller.isPlaybackPlaying()) controller.pausePlayback();
+        else controller.resumePlayback();
+    }
+    if (Button(isPlaybackFinished(controller) ? "Restart" : "Stop", getControlButtonBounds(3)).isClicked()) controller.stopPlayback();
     if (Button("Forward", getControlButtonBounds(4)).isClicked()) controller.stepPlaybackForward();
+    if (Button("Fast", getControlButtonBounds(5)).isClicked()) controller.speedUpPlayback();
 
     if (Button("Save", getBottomButtonBounds(0)).isClicked()) controller.openSave();
     if (Button("Reconfigure", getBottomButtonBounds(1)).isClicked()) controller.openConfig();
@@ -114,11 +132,12 @@ void SolutionScreen::draw(const GUIController& controller) const {
         Color{246, 248, 252, 255}
     );
 
-    Button("Pause", getControlButtonBounds(0)).draw(!controller.isPlaybackPlaying());
-    Button("Resume", getControlButtonBounds(1)).draw(controller.isPlaybackPlaying());
-    Button("Stop", getControlButtonBounds(2)).draw();
-    Button("Back", getControlButtonBounds(3)).draw();
+    Button("Slow", getControlButtonBounds(0)).draw();
+    Button("Back", getControlButtonBounds(1)).draw();
+    Button(getPlaybackToggleText(controller), getControlButtonBounds(2)).draw(controller.isPlaybackPlaying());
+    Button(isPlaybackFinished(controller) ? "Restart" : "Stop", getControlButtonBounds(3)).draw();
     Button("Forward", getControlButtonBounds(4)).draw();
+    Button("Fast", getControlButtonBounds(5)).draw();
 
     DrawRectangleRounded(infoPanel, 0.05f, 12, Color{34, 38, 48, 255});
     DrawRectangleRoundedLines(infoPanel, 0.05f, 12, Color{85, 94, 112, 255});
