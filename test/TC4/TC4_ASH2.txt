@@ -1,0 +1,6 @@
+Algorithm: A*
+Heuristic: H2
+
+Solusi tidak ditemukan.
+Waktu eksekusi: 0 ms
+Banyak iterasi yang dilakukan: 13 iterasi

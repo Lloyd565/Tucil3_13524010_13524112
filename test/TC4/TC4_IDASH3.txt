@@ -1,0 +1,6 @@
+Algorithm: IDA*
+Heuristic: H3
+
+Solusi tidak ditemukan.
+Waktu eksekusi: 6 ms
+Banyak iterasi yang dilakukan: 1320 iterasi

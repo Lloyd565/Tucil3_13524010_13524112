@@ -1,0 +1,59 @@
+Algorithm: A*
+Heuristic: H1
+
+Solusi Yang Ditemukan : LULD
+Cost dari Solusi : 53
+
+Initial
+XXXXXXXXXX
+XX*X*****X
+X**X*X***X
+X****X*ZXX
+X**X***X*X
+X**X*X*X*X
+XX**O*X**X
+XXXXXXXXXX
+
+Step 1 : L
+XXXXXXXXXX
+XX*X*****X
+X**X*X***X
+X****XZ*XX
+X**X***X*X
+X**X*X*X*X
+XX**O*X**X
+XXXXXXXXXX
+
+Step 2 : U
+XXXXXXXXXX
+XX*X**Z**X
+X**X*X***X
+X****X**XX
+X**X***X*X
+X**X*X*X*X
+XX**O*X**X
+XXXXXXXXXX
+
+Step 3 : L
+XXXXXXXXXX
+XX*XZ****X
+X**X*X***X
+X****X**XX
+X**X***X*X
+X**X*X*X*X
+XX**O*X**X
+XXXXXXXXXX
+
+Step 4 : D
+XXXXXXXXXX
+XX*X*****X
+X**X*X***X
+X****X**XX
+X**X***X*X
+X**X*X*X*X
+XX**Z*X**X
+XXXXXXXXXX
+
+
+Waktu eksekusi: 0 ms
+Banyak iterasi yang dilakukan: 9 iterasi

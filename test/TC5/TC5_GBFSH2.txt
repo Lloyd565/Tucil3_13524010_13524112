@@ -1,0 +1,49 @@
+Algorithm: GBFS
+Heuristic: H2
+
+Solusi Yang Ditemukan : ULD
+Cost dari Solusi : 58
+
+Initial
+XXXXXXXXXX
+XX*X*****X
+X**X*X***X
+X****X*ZXX
+X**X***X*X
+X**X*X*X*X
+XX**O*X**X
+XXXXXXXXXX
+
+Step 1 : U
+XXXXXXXXXX
+XX*X***Z*X
+X**X*X***X
+X****X**XX
+X**X***X*X
+X**X*X*X*X
+XX**O*X**X
+XXXXXXXXXX
+
+Step 2 : L
+XXXXXXXXXX
+XX*XZ****X
+X**X*X***X
+X****X**XX
+X**X***X*X
+X**X*X*X*X
+XX**O*X**X
+XXXXXXXXXX
+
+Step 3 : D
+XXXXXXXXXX
+XX*X*****X
+X**X*X***X
+X****X**XX
+X**X***X*X
+X**X*X*X*X
+XX**Z*X**X
+XXXXXXXXXX
+
+
+Waktu eksekusi: 0 ms
+Banyak iterasi yang dilakukan: 7 iterasi

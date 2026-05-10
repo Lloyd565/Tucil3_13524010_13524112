@@ -1,0 +1,105 @@
+Algorithm: A*
+Heuristic: H1
+
+Solusi Yang Ditemukan : DLRULRD
+Cost dari Solusi : 109
+
+Initial
+XXXXXXXXXXXX
+X**********X
+X***XX*X***X
+X***1*X*X**X
+X**XL**X***X
+X********X*X
+X**X**X*X**X
+X****Z***X*X
+X**X0OX*X**X
+XXXXXXXXXXXX
+
+Step 1 : D
+XXXXXXXXXXXX
+X**********X
+X***XX*X***X
+X***1*X*X**X
+X**XL**X***X
+X********X*X
+X**X**X*X**X
+X********X*X
+X**X0ZX*X**X
+XXXXXXXXXXXX
+
+Step 2 : L
+XXXXXXXXXXXX
+X**********X
+X***XX*X***X
+X***1*X*X**X
+X**XL**X***X
+X********X*X
+X**X**X*X**X
+X********X*X
+X**XZOX*X**X
+XXXXXXXXXXXX
+
+Step 3 : R
+XXXXXXXXXXXX
+X**********X
+X***XX*X***X
+X***1*X*X**X
+X**XL**X***X
+X********X*X
+X**X**X*X**X
+X********X*X
+X**X0ZX*X**X
+XXXXXXXXXXXX
+
+Step 4 : U
+XXXXXXXXXXXX
+X**********X
+X***XX*X***X
+X***1ZX*X**X
+X**XL**X***X
+X********X*X
+X**X**X*X**X
+X********X*X
+X**X0OX*X**X
+XXXXXXXXXXXX
+
+Step 5 : L
+XXXXXXXXXXXX
+X**********X
+X***XX*X***X
+XZ**1*X*X**X
+X**XL**X***X
+X********X*X
+X**X**X*X**X
+X********X*X
+X**X0OX*X**X
+XXXXXXXXXXXX
+
+Step 6 : R
+XXXXXXXXXXXX
+X**********X
+X***XX*X***X
+X***1ZX*X**X
+X**XL**X***X
+X********X*X
+X**X**X*X**X
+X********X*X
+X**X0OX*X**X
+XXXXXXXXXXXX
+
+Step 7 : D
+XXXXXXXXXXXX
+X**********X
+X***XX*X***X
+X***1*X*X**X
+X**XL**X***X
+X********X*X
+X**X**X*X**X
+X********X*X
+X**X0ZX*X**X
+XXXXXXXXXXXX
+
+
+Waktu eksekusi: 0 ms
+Banyak iterasi yang dilakukan: 16 iterasi

@@ -1,0 +1,61 @@
+Algorithm: UCS
+Heuristic: -
+
+Solusi Yang Ditemukan : DRU
+Cost dari Solusi : 24
+
+Initial
+XXXXXXXXXXX
+XZ*******OX
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+XXXXXXXXXXX
+
+Step 1 : D
+XXXXXXXXXXX
+X********OX
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+XZ********X
+XXXXXXXXXXX
+
+Step 2 : R
+XXXXXXXXXXX
+X********OX
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X********ZX
+XXXXXXXXXXX
+
+Step 3 : U
+XXXXXXXXXXX
+X********ZX
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+X*XXXXXXX*X
+X*********X
+XXXXXXXXXXX
+
+
+Waktu eksekusi: 0 ms
+Banyak iterasi yang dilakukan: 4 iterasi
