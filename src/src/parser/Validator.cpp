@@ -30,6 +30,16 @@ bool Validator::validateCostSize(
     return true;
 }
 
+bool Validator::validatePositiveCosts(const vector<vector<int>>& costLines) {
+    for (const vector<int>& line : costLines) {
+        for (int cost : line) {
+            if (cost <= 0) return false;
+        }
+    }
+
+    return true;
+}
+
 bool Validator::validateSymbols(const vector<string>& gridLines) {
     for (const string& line : gridLines) {
         for (char c : line) {
@@ -86,6 +96,7 @@ bool Validator::validateAll(
     return validateDimension(row, col) &&
             validateGridSize(gridLines, row, col) && 
             validateCostSize(costs, row, col) && 
+            validatePositiveCosts(costs) &&
             validateSymbols(gridLines) && 
             validatePlayerAndGoal(gridLines) &&
             validateNumbers(gridLines);

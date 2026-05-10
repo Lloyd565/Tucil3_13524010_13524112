@@ -26,12 +26,14 @@ class GUIController {
         int paintRows;
         int paintCols;
         std::vector<std::string> paintBoard;
+        std::vector<std::vector<int>> paintCosts;
         char selectedPaintTile;
         int nextPaintNumber;
         GUIActiveScreen paintReturnScreen;
         int savedPaintRows;
         int savedPaintCols;
         std::vector<std::string> savedPaintBoard;
+        std::vector<std::vector<int>> savedPaintCosts;
         char savedSelectedPaintTile;
         int savedNextPaintNumber;
         bool paintBoardDirty;
@@ -73,6 +75,7 @@ class GUIController {
         int getPaintRows() const;
         int getPaintCols() const;
         const std::vector<std::string>& getPaintBoard() const;
+        const std::vector<std::vector<int>>& getPaintCosts() const;
         char getSelectedPaintTile() const;
         const std::string& getNewGameMessage() const;
         const std::string& getSelectedAlgorithm() const;

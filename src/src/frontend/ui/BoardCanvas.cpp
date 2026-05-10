@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <string>
 
 using namespace std;
 
@@ -59,7 +60,7 @@ bool BoardCanvas::getCellAtMouse(int rows, int cols, int& row, int& col) const {
     return row >= 0 && row < rows && col >= 0 && col < cols;
 }
 
-void BoardCanvas::draw(const vector<string>& board) const {
+void BoardCanvas::draw(const vector<string>& board, const vector<vector<int>>& costs) const {
     const int rows = board.size();
     const int cols = board.empty() ? 0 : board[0].size();
     if (rows == 0 || cols == 0) return;
@@ -83,8 +84,9 @@ void BoardCanvas::draw(const vector<string>& board) const {
         for (int col = 0 ; col < cols ; col++) {
             const float tileX = boardX + col * tileSize;
             const float tileY = boardY + row * tileSize;
+            const int cost = row < (int) costs.size() && col < (int) costs[row].size() ? costs[row][col] : 1;
 
-            drawTile(board[row][col], tileX, tileY, tileSize);
+            drawTile(board[row][col], cost, tileX, tileY, tileSize);
             DrawRectangleLinesEx(
                 Rectangle{tileX, tileY, tileSize, tileSize},
                 1.0f,
@@ -94,7 +96,7 @@ void BoardCanvas::draw(const vector<string>& board) const {
     }
 }
 
-void BoardCanvas::drawTile(char tile, float x, float y, float size) const {
+void BoardCanvas::drawTile(char tile, int cost, float x, float y, float size) const {
     Color tileColor = WHITE;
 
     if (tile == 'X') tileColor = Color{10, 10, 12, 255};
@@ -116,6 +118,24 @@ void BoardCanvas::drawTile(char tile, float x, float y, float size) const {
     else if (tile == 'Z') {
         drawPlayer(x, y, size);
     }
+
+    drawCost(tile, cost, x, y, size);
+}
+
+void BoardCanvas::drawCost(char tile, int cost, float x, float y, float size) const {
+    const int fontSize = std::max(9, std::min(18, static_cast<int>(size * 0.18f)));
+    const std::string text = std::to_string(cost);
+    const Color textColor = (tile == 'X' || tile == 'L' || tile == 'O') ?
+                            Color{246, 248, 252, 118} :
+                            Color{24, 29, 39, 105};
+
+    DrawText(
+        text.c_str(),
+        static_cast<int>(x + size * 0.07f),
+        static_cast<int>(y + size - fontSize - size * 0.06f),
+        fontSize,
+        textColor
+    );
 }
 
 void BoardCanvas::drawPlayer(float x, float y, float size) const {

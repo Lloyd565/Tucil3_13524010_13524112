@@ -149,6 +149,7 @@ void SolutionScreen::draw(const GUIController& controller) const {
 
     animatedBoard.draw(
         controller.getPaintBoard(),
+        controller.getPaintCosts(),
         controller.getPlaybackPath(),
         controller.getPlaybackIndex(),
         controller.getPlaybackProgress()

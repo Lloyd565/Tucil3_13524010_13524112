@@ -18,6 +18,7 @@
 
 static Board buildBoardFromPaintState(
     const std::vector<std::string>& paintBoard,
+    const std::vector<std::vector<int>>& paintCosts,
     int rows,
     int cols
 ) {
@@ -30,6 +31,7 @@ static Board buildBoardFromPaintState(
     for (int row = 0 ; row < rows ; row++) {
         for (int col = 0 ; col < cols ; col++) {
             char tile = paintBoard[row][col];
+            costs[row][col] = paintCosts[row][col];
 
             if (tile == 'Z') {
                 startPosition = Position(row, col);
@@ -71,12 +73,14 @@ GUIController::GUIController()
       paintRows(6),
       paintCols(6),
       paintBoard(6, std::string(6, '*')),
+      paintCosts(6, std::vector<int>(6, 1)),
       selectedPaintTile('X'),
       nextPaintNumber(0),
       paintReturnScreen(GUIActiveScreen::MainMenu),
       savedPaintRows(6),
       savedPaintCols(6),
       savedPaintBoard(6, std::string(6, '*')),
+      savedPaintCosts(6, std::vector<int>(6, 1)),
       savedSelectedPaintTile('X'),
       savedNextPaintNumber(0),
       paintBoardDirty(true),
@@ -136,6 +140,10 @@ int GUIController::getPaintCols() const {
 
 const std::vector<std::string>& GUIController::getPaintBoard() const {
     return paintBoard;
+}
+
+const std::vector<std::vector<int>>& GUIController::getPaintCosts() const {
+    return paintCosts;
 }
 
 char GUIController::getSelectedPaintTile() const {
@@ -260,18 +268,21 @@ void GUIController::setPaintBoardSize(int rows, int cols) {
     cols = std::max(2, std::min(cols, 12));
 
     std::vector<std::string> resizedBoard(rows, std::string(cols, '*'));
+    std::vector<std::vector<int>> resizedCosts(rows, std::vector<int>(cols, 1));
     const int copiedRows = std::min(rows, paintRows);
     const int copiedCols = std::min(cols, paintCols);
 
     for (int row = 0 ; row < copiedRows ; row++) {
         for (int col = 0 ; col < copiedCols ; col++) {
             resizedBoard[row][col] = paintBoard[row][col];
+            resizedCosts[row][col] = paintCosts[row][col];
         }
     }
 
     paintRows = rows;
     paintCols = cols;
     paintBoard = resizedBoard;
+    paintCosts = resizedCosts;
     paintBoardDirty = true;
     newGameMessage.clear();
 }
@@ -358,10 +369,13 @@ void GUIController::submitLoadGame() {
         paintRows = board.getRows();
         paintCols = board.getCols();
         paintBoard = std::vector<std::string>(paintRows, std::string(paintCols, '*'));
+        paintCosts = std::vector<std::vector<int>>(paintRows, std::vector<int>(paintCols, 1));
 
         for (int row = 0 ; row < paintRows ; row++) {
             for (int col = 0 ; col < paintCols ; col++) {
-                paintBoard[row][col] = board.getTile(Position(row, col));
+                Position position(row, col);
+                paintBoard[row][col] = board.getTile(position);
+                paintCosts[row][col] = board.getCost(position);
             }
         }
 
@@ -396,7 +410,7 @@ void GUIController::submitConfig() {
 
     try {
         if (paintBoardDirty || currentBoard.getRows() != paintRows || currentBoard.getCols() != paintCols) {
-            currentBoard = buildBoardFromPaintState(paintBoard, paintRows, paintCols);
+            currentBoard = buildBoardFromPaintState(paintBoard, paintCosts, paintRows, paintCols);
             paintBoardDirty = false;
         }
 
@@ -514,6 +528,7 @@ void GUIController::resetPaintBoard() {
     paintRows = 6;
     paintCols = 6;
     paintBoard = std::vector<std::string>(paintRows, std::string(paintCols, '*'));
+    paintCosts = std::vector<std::vector<int>>(paintRows, std::vector<int>(paintCols, 1));
     selectedPaintTile = 'X';
     nextPaintNumber = 0;
     paintBoardDirty = true;
@@ -524,6 +539,7 @@ void GUIController::savePaintSnapshot() {
     savedPaintRows = paintRows;
     savedPaintCols = paintCols;
     savedPaintBoard = paintBoard;
+    savedPaintCosts = paintCosts;
     savedSelectedPaintTile = selectedPaintTile;
     savedNextPaintNumber = nextPaintNumber;
     savedPaintBoardDirty = paintBoardDirty;
@@ -533,6 +549,7 @@ void GUIController::restorePaintSnapshot() {
     paintRows = savedPaintRows;
     paintCols = savedPaintCols;
     paintBoard = savedPaintBoard;
+    paintCosts = savedPaintCosts;
     selectedPaintTile = savedSelectedPaintTile;
     nextPaintNumber = savedNextPaintNumber;
     paintBoardDirty = savedPaintBoardDirty;

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <string>
 
 using namespace std;
 
@@ -15,6 +16,7 @@ void AnimatedBoard::setBounds(Rectangle bounds) {
 
 void AnimatedBoard::draw(
     const vector<string>& board,
+    const vector<vector<int>>& costs,
     const vector<pair<int, int>>& path,
     int playbackIndex,
     float playbackProgress
@@ -44,9 +46,11 @@ void AnimatedBoard::draw(
 
             const float tileX = boardX + col * tileSize;
             const float tileY = boardY + row * tileSize;
+            const int cost = row < (int) costs.size() && col < (int) costs[row].size() ? costs[row][col] : 1;
 
             drawTile(
                 tile,
+                cost,
                 tileX,
                 tileY,
                 tileSize,
@@ -71,7 +75,7 @@ void AnimatedBoard::draw(
     }
 }
 
-void AnimatedBoard::drawTile(char tile, float x, float y, float size, bool visitedNumberTile) const {
+void AnimatedBoard::drawTile(char tile, int cost, float x, float y, float size, bool visitedNumberTile) const {
     Color tileColor = WHITE;
 
     if (tile == 'X') tileColor = Color{10, 10, 12, 255};
@@ -98,6 +102,24 @@ void AnimatedBoard::drawTile(char tile, float x, float y, float size, bool visit
             textColor
         );
     }
+
+    drawCost(tile, cost, x, y, size);
+}
+
+void AnimatedBoard::drawCost(char tile, int cost, float x, float y, float size) const {
+    const int fontSize = std::max(9, std::min(18, static_cast<int>(size * 0.18f)));
+    const std::string text = std::to_string(cost);
+    const Color textColor = (tile == 'X' || tile == 'L' || tile == 'O') ?
+                            Color{246, 248, 252, 118} :
+                            Color{24, 29, 39, 105};
+
+    DrawText(
+        text.c_str(),
+        static_cast<int>(x + size * 0.07f),
+        static_cast<int>(y + size - fontSize - size * 0.06f),
+        fontSize,
+        textColor
+    );
 }
 
 bool AnimatedBoard::isVisitedNumberTile(

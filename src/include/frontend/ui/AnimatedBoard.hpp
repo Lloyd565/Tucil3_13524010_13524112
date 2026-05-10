@@ -10,7 +10,8 @@ class AnimatedBoard {
     private:
         Rectangle bounds;
 
-        void drawTile(char tile, float x, float y, float size, bool visitedNumberTile) const;
+        void drawTile(char tile, int cost, float x, float y, float size, bool visitedNumberTile) const;
+        void drawCost(char tile, int cost, float x, float y, float size) const;
         void drawPlayer(float x, float y, float size) const;
         bool isVisitedNumberTile(
             const std::vector<std::string>& board,
@@ -27,6 +28,7 @@ class AnimatedBoard {
         void setBounds(Rectangle bounds);
         void draw(
             const std::vector<std::string>& board,
+            const std::vector<std::vector<int>>& costs,
             const std::vector<std::pair<int, int>>& path,
             int playbackIndex,
             float playbackProgress

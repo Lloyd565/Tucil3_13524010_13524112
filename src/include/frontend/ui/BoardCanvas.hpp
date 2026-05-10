@@ -13,7 +13,8 @@ class BoardCanvas {
         int lastPaintedCol;
 
         bool getCellAtMouse(int rows, int cols, int& row, int& col) const;
-        void drawTile(char tile, float x, float y, float size) const;
+        void drawTile(char tile, int cost, float x, float y, float size) const;
+        void drawCost(char tile, int cost, float x, float y, float size) const;
         void drawPlayer(float x, float y, float size) const;
 
     public:
@@ -21,5 +22,5 @@ class BoardCanvas {
 
         void setBounds(Rectangle bounds);
         bool getPaintedCell(int rows, int cols, int& row, int& col);
-        void draw(const std::vector<std::string>& board) const;
+        void draw(const std::vector<std::string>& board, const std::vector<std::vector<int>>& costs) const;
 };

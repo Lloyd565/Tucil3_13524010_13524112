@@ -191,7 +191,7 @@ void ConfigScreen::draw(const GUIController& controller) const {
         }
     }
 
-    boardCanvas.draw(controller.getPaintBoard());
+    boardCanvas.draw(controller.getPaintBoard(), controller.getPaintCosts());
     tileLegend.draw();
     PaintButton(getPaintButtonBounds()).draw();
     Button("Enter", getEnterButtonBounds()).draw();

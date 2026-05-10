@@ -97,7 +97,7 @@ void NewGameScreen::draw(const GUIController& controller) const {
 
     Button("Back", getBackButtonBounds()).draw();
     SizeConfig(getSizeConfigBounds()).draw(controller.getPaintRows(), controller.getPaintCols());
-    boardCanvas.draw(controller.getPaintBoard());
+    boardCanvas.draw(controller.getPaintBoard(), controller.getPaintCosts());
     TilePalette(getPaletteBounds()).draw(controller.getSelectedPaintTile());
     Button("Enter", getEnterButtonBounds()).draw();
 
