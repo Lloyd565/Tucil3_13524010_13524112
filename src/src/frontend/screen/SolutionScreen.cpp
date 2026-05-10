@@ -66,10 +66,10 @@ static Rectangle getBottomButtonBounds(int index) {
 }
 
 static void drawInfoLine(const char* label, const char* value, float x, float y) {
-    const int labelFontSize = static_cast<int>(20.0f * std::min(scaleX(), scaleY()));
-    const int valueFontSize = static_cast<int>(26.0f * std::min(scaleX(), scaleY()));
+    const int labelFontSize = static_cast<int>(18.0f * std::min(scaleX(), scaleY()));
+    const int valueFontSize = static_cast<int>(23.0f * std::min(scaleX(), scaleY()));
     DrawText(label, static_cast<int>(x), static_cast<int>(y), labelFontSize, Color{176, 185, 204, 255});
-    DrawText(value, static_cast<int>(x), static_cast<int>(y + 28.0f * scaleY()), valueFontSize, Color{246, 248, 252, 255});
+    DrawText(value, static_cast<int>(x), static_cast<int>(y + 24.0f * scaleY()), valueFontSize, Color{246, 248, 252, 255});
 }
 
 static bool isPlaybackFinished(const GUIController& controller) {
@@ -84,6 +84,15 @@ static const char* getPlaybackToggleText(const GUIController& controller) {
     if (controller.isPlaybackPlaying()) return "Pause";
     if (controller.getPlaybackIndex() == 0 && controller.getPlaybackProgress() == 0.0f) return "Start";
     return "Resume";
+}
+
+static const char* getHeuristicDisplayName(const std::string& heuristic) {
+    if (heuristic == "H1") return "Manhattan Checkpoint";
+    if (heuristic == "H2") return "Chebyshev Checkpoint";
+    if (heuristic == "H3") return "Euclidean Checkpoint";
+    if (heuristic == "H4") return "Manhattan Chain";
+    if (heuristic == "H5") return "Scaling Costn";
+    return "-";
 }
 
 SolutionScreen::SolutionScreen()
@@ -117,6 +126,7 @@ void SolutionScreen::draw(const GUIController& controller) const {
     char costText[32];
     char iterationText[32];
     char timeText[32];
+    const char* heuristicText = getHeuristicDisplayName(controller.getSelectedHeuristic());
     const std::string movesText = controller.getSolutionMoves().empty() ? "-" : controller.getSolutionMoves();
 
     std::snprintf(costText, sizeof(costText), "%d", controller.getSolutionCost());
@@ -142,10 +152,12 @@ void SolutionScreen::draw(const GUIController& controller) const {
     DrawRectangleRounded(infoPanel, 0.05f, 12, Color{34, 38, 48, 255});
     DrawRectangleRoundedLines(infoPanel, 0.05f, 12, Color{85, 94, 112, 255});
     DrawText("Infographics", static_cast<int>(infoPanel.x + 28.0f * scaleX()), static_cast<int>(infoPanel.y + 28.0f * scaleY()), static_cast<int>(28.0f * std::min(scaleX(), scaleY())), Color{246, 248, 252, 255});
-    drawInfoLine("Cost", costText, infoPanel.x + 28.0f * scaleX(), infoPanel.y + 92.0f * scaleY());
-    drawInfoLine("Solution", movesText.c_str(), infoPanel.x + 28.0f * scaleX(), infoPanel.y + 174.0f * scaleY());
-    drawInfoLine("Iterations", iterationText, infoPanel.x + 28.0f * scaleX(), infoPanel.y + 256.0f * scaleY());
-    drawInfoLine("Execution Time", timeText, infoPanel.x + 28.0f * scaleX(), infoPanel.y + 338.0f * scaleY());
+    drawInfoLine("Algorithm", controller.getSelectedAlgorithm().c_str(), infoPanel.x + 28.0f * scaleX(), infoPanel.y + 82.0f * scaleY());
+    drawInfoLine("Heuristic", heuristicText, infoPanel.x + 28.0f * scaleX(), infoPanel.y + 146.0f * scaleY());
+    drawInfoLine("Cost", costText, infoPanel.x + 28.0f * scaleX(), infoPanel.y + 210.0f * scaleY());
+    drawInfoLine("Solution", movesText.c_str(), infoPanel.x + 28.0f * scaleX(), infoPanel.y + 274.0f * scaleY());
+    drawInfoLine("Iterations", iterationText, infoPanel.x + 28.0f * scaleX(), infoPanel.y + 338.0f * scaleY());
+    drawInfoLine("Execution Time", timeText, infoPanel.x + 28.0f * scaleX(), infoPanel.y + 402.0f * scaleY());
 
     animatedBoard.draw(
         controller.getPaintBoard(),
