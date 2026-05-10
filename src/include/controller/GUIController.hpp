@@ -1,13 +1,15 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 enum class GUIActiveScreen {
     MainMenu,
     NewGame,
     LoadGame,
-    Config
+    Config,
+    Solution
 };
 
 class GUIController {
@@ -23,10 +25,19 @@ class GUIController {
         std::string selectedAlgorithm;
         std::string selectedHeuristic;
         std::string configMessage;
+        std::vector<std::pair<int, int>> playbackPath;
+        std::string solutionMoves;
+        int solutionCost;
+        int solutionIterations;
+        long long solutionExecutionTime;
+        int playbackIndex;
+        float playbackProgress;
+        bool playbackPlaying;
         bool exitRequested;
 
         int countPaintTile(char tile) const;
         void clearPaintTile(char tile);
+        void preparePreviewSolution();
 
     public:
         GUIController();
@@ -42,11 +53,20 @@ class GUIController {
         const std::string& getSelectedAlgorithm() const;
         const std::string& getSelectedHeuristic() const;
         const std::string& getConfigMessage() const;
+        const std::vector<std::pair<int, int>>& getPlaybackPath() const;
+        const std::string& getSolutionMoves() const;
+        int getSolutionCost() const;
+        int getSolutionIterations() const;
+        long long getSolutionExecutionTime() const;
+        int getPlaybackIndex() const;
+        float getPlaybackProgress() const;
+        bool isPlaybackPlaying() const;
         bool shouldExit() const;
 
         void openNewGame();
         void openLoadGame();
         void openConfig();
+        void openMainMenu();
         void requestExit();
         void setPaintBoardSize(int rows, int cols);
         void setSelectedPaintTile(char tile);
@@ -56,4 +76,11 @@ class GUIController {
         void submitNewGame();
         void submitLoadGame();
         void submitConfig();
+        void updatePlayback(float deltaTime);
+        void pausePlayback();
+        void resumePlayback();
+        void stopPlayback();
+        void stepPlaybackBack();
+        void stepPlaybackForward();
+        void saveSolution();
 };

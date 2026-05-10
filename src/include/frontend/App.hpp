@@ -6,6 +6,7 @@
 #include "frontend/screen/LoadScreen.hpp"
 #include "frontend/screen/MainScreen.hpp"
 #include "frontend/screen/NewGameScreen.hpp"
+#include "frontend/screen/SolutionScreen.hpp"
 
 class App {
     private:
@@ -15,6 +16,7 @@ class App {
         NewGameScreen newGameScreen;
         LoadScreen loadScreen;
         ConfigScreen configScreen;
+        SolutionScreen solutionScreen;
 
     public:
         App();

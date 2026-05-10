@@ -1,6 +1,7 @@
 #include "controller/GUIController.hpp"
 
 #include <algorithm>
+#include <queue>
 
 GUIController::GUIController()
     : activeScreen(GUIActiveScreen::MainMenu),
@@ -14,6 +15,14 @@ GUIController::GUIController()
       selectedAlgorithm(),
       selectedHeuristic(),
       configMessage(),
+      playbackPath(),
+      solutionMoves(),
+      solutionCost(0),
+      solutionIterations(0),
+      solutionExecutionTime(0),
+      playbackIndex(0),
+      playbackProgress(0.0f),
+      playbackPlaying(true),
       exitRequested(false) {}
 
 GUIActiveScreen GUIController::getActiveScreen() const {
@@ -60,6 +69,38 @@ const std::string& GUIController::getConfigMessage() const {
     return configMessage;
 }
 
+const std::vector<std::pair<int, int>>& GUIController::getPlaybackPath() const {
+    return playbackPath;
+}
+
+const std::string& GUIController::getSolutionMoves() const {
+    return solutionMoves;
+}
+
+int GUIController::getSolutionCost() const {
+    return solutionCost;
+}
+
+int GUIController::getSolutionIterations() const {
+    return solutionIterations;
+}
+
+long long GUIController::getSolutionExecutionTime() const {
+    return solutionExecutionTime;
+}
+
+int GUIController::getPlaybackIndex() const {
+    return playbackIndex;
+}
+
+float GUIController::getPlaybackProgress() const {
+    return playbackProgress;
+}
+
+bool GUIController::isPlaybackPlaying() const {
+    return playbackPlaying;
+}
+
 bool GUIController::shouldExit() const {
     return exitRequested;
 }
@@ -75,6 +116,10 @@ void GUIController::openLoadGame() {
 void GUIController::openConfig() {
     activeScreen = GUIActiveScreen::Config;
     configMessage.clear();
+}
+
+void GUIController::openMainMenu() {
+    activeScreen = GUIActiveScreen::MainMenu;
 }
 
 void GUIController::requestExit() {
@@ -168,7 +213,55 @@ void GUIController::submitConfig() {
         return;
     }
 
-    configMessage = "Configuration is ready. Next page will be added later.";
+    preparePreviewSolution();
+    activeScreen = GUIActiveScreen::Solution;
+}
+
+void GUIController::updatePlayback(float deltaTime) {
+    if (!playbackPlaying || playbackPath.size() <= 1) return;
+    if (playbackIndex >= (int) playbackPath.size() - 1) return;
+
+    playbackProgress += deltaTime * 2.5f;
+    while (playbackProgress >= 1.0f && playbackIndex < (int) playbackPath.size() - 1) {
+        playbackProgress -= 1.0f;
+        playbackIndex++;
+    }
+
+    if (playbackIndex >= (int) playbackPath.size() - 1) {
+        playbackIndex = playbackPath.size() - 1;
+        playbackProgress = 0.0f;
+        playbackPlaying = false;
+    }
+}
+
+void GUIController::pausePlayback() {
+    playbackPlaying = false;
+}
+
+void GUIController::resumePlayback() {
+    if (playbackIndex < (int) playbackPath.size() - 1) playbackPlaying = true;
+}
+
+void GUIController::stopPlayback() {
+    playbackPlaying = false;
+    playbackIndex = 0;
+    playbackProgress = 0.0f;
+}
+
+void GUIController::stepPlaybackBack() {
+    playbackPlaying = false;
+    playbackProgress = 0.0f;
+    if (playbackIndex > 0) playbackIndex--;
+}
+
+void GUIController::stepPlaybackForward() {
+    playbackPlaying = false;
+    playbackProgress = 0.0f;
+    if (playbackIndex < (int) playbackPath.size() - 1) playbackIndex++;
+}
+
+void GUIController::saveSolution() {
+    // Solution saving will live here.
 }
 
 int GUIController::countPaintTile(char tile) const {
@@ -189,4 +282,100 @@ void GUIController::clearPaintTile(char tile) {
             if (currentTile == tile) currentTile = '*';
         }
     }
+}
+
+void GUIController::preparePreviewSolution() {
+    const int rows = paintRows;
+    const int cols = paintCols;
+    std::pair<int, int> start = {0, 0};
+    std::pair<int, int> goal = {rows - 1, cols - 1};
+    bool hasStart = false;
+    bool hasGoal = false;
+
+    for (int row = 0 ; row < rows ; row++) {
+        for (int col = 0 ; col < cols ; col++) {
+            if (paintBoard[row][col] == 'Z') {
+                start = {row, col};
+                hasStart = true;
+            }
+            else if (paintBoard[row][col] == 'O') {
+                goal = {row, col};
+                hasGoal = true;
+            }
+        }
+    }
+
+    playbackPath.clear();
+    solutionMoves.clear();
+    solutionIterations = 0;
+
+    if (!hasStart) {
+        playbackPath.push_back(start);
+        solutionCost = 0;
+        solutionExecutionTime = 0;
+        playbackIndex = 0;
+        playbackProgress = 0.0f;
+        playbackPlaying = false;
+        return;
+    }
+
+    std::vector<std::vector<int>> visited(rows, std::vector<int>(cols, 0));
+    std::vector<std::vector<std::pair<int, int>>> parent(rows, std::vector<std::pair<int, int>>(cols, {-1, -1}));
+    std::vector<std::vector<char>> parentMove(rows, std::vector<char>(cols, '\0'));
+    std::queue<std::pair<int, int>> queue;
+    const int rowDelta[4] = {-1, 1, 0, 0};
+    const int colDelta[4] = {0, 0, -1, 1};
+    const char moveChars[4] = {'U', 'D', 'L', 'R'};
+
+    queue.push(start);
+    visited[start.first][start.second] = 1;
+
+    while (!queue.empty()) {
+        std::pair<int, int> current = queue.front();
+        queue.pop();
+        solutionIterations++;
+
+        if (hasGoal && current == goal) break;
+
+        for (int i = 0 ; i < 4 ; i++) {
+            const int nextRow = current.first + rowDelta[i];
+            const int nextCol = current.second + colDelta[i];
+
+            if (nextRow < 0 || nextRow >= rows || nextCol < 0 || nextCol >= cols) continue;
+            if (visited[nextRow][nextCol]) continue;
+            if (paintBoard[nextRow][nextCol] == 'X' || paintBoard[nextRow][nextCol] == 'L') continue;
+
+            visited[nextRow][nextCol] = 1;
+            parent[nextRow][nextCol] = current;
+            parentMove[nextRow][nextCol] = moveChars[i];
+            queue.push({nextRow, nextCol});
+        }
+    }
+
+    if (!hasGoal || !visited[goal.first][goal.second]) {
+        playbackPath.push_back(start);
+        solutionCost = 0;
+        solutionExecutionTime = solutionIterations;
+        playbackIndex = 0;
+        playbackProgress = 0.0f;
+        playbackPlaying = false;
+        return;
+    }
+
+    std::pair<int, int> current = goal;
+    while (current != start) {
+        playbackPath.push_back(current);
+        solutionMoves.push_back(parentMove[current.first][current.second]);
+        current = parent[current.first][current.second];
+    }
+    playbackPath.push_back(start);
+
+    std::reverse(playbackPath.begin(), playbackPath.end());
+    std::reverse(solutionMoves.begin(), solutionMoves.end());
+
+    solutionCost = solutionMoves.size();
+    solutionExecutionTime = std::max(1, solutionIterations / 2);
+    playbackIndex = 0;
+    playbackProgress = 0.0f;
+    playbackPlaying = playbackPath.size() > 1;
 }
