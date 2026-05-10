@@ -78,8 +78,7 @@ static int sampleLPathCost(const Board& board, const Position& from, const Posit
     return (best != INT_MAX) ? best : 3 * fallback;
 }
 
-// L-path cost sampling — scan biaya tile asli sepanjang jalur L terpendek tiap segmen.
-// Non-admissible: cocok untuk GBFS, bukan A*.
+
 int GBFSHeuristic::compute(const Board& board, const State& state) {
     int minCost = getMinTraverseCost(board);
     int next = state.getNextRequiredNumber();
