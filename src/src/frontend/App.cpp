@@ -3,19 +3,32 @@
 #include "frontend/config/FrontendConfig.hpp"
 
 App::App()
-    : window(
+    : controller(),
+      window(
         FrontendConfig::WINDOW_WIDTH,
         FrontendConfig::WINDOW_HEIGHT,
         FrontendConfig::WINDOW_TITLE,
         FrontendConfig::TARGET_FPS
     ),
-      mainScreen() {}
+      mainScreen(),
+      loadScreen() {}
 
 void App::run() {
-    while (!window.shouldClose()) {
+    while (!window.shouldClose() && !controller.shouldExit()) {
         window.handleInput();
+
+        if (controller.getActiveScreen() == GUIActiveScreen::MainMenu) {
+            mainScreen.update(controller);
+        }
+        else if (controller.getActiveScreen() == GUIActiveScreen::LoadGame) {
+            loadScreen.update(controller);
+        }
+
         window.beginDrawing();
-        mainScreen.draw();
+
+        if (controller.getActiveScreen() == GUIActiveScreen::MainMenu) mainScreen.draw();
+        else if (controller.getActiveScreen() == GUIActiveScreen::LoadGame) loadScreen.draw(controller);
+
         window.endDrawing();
     }
 }
