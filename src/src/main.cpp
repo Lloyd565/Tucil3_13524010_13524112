@@ -45,6 +45,7 @@ static string normalizeHeuristic(const string& heuristic) {
     if (lowerHeuristic == "h1") return "H1";
     if (lowerHeuristic == "h2") return "H2";
     if (lowerHeuristic == "h3") return "H3";
+    if (lowerHeuristic == "h4") return "H4";
 
     return "";
 }
@@ -103,7 +104,7 @@ static string promptHeuristic() {
     string heuristicName;
 
     while (heuristicName == "") {
-        cout << "Heuristic apa yang anda pilih? (H1/H2/H3)\n";
+        cout << "Heuristic apa yang anda pilih? (H1/H2/H3/H4)\n";
         if (!(cin >> heuristicInput)) throw runtime_error("Gagal membaca heuristic");
 
         heuristicName = normalizeHeuristic(heuristicInput);
